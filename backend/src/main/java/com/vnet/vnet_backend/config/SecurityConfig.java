@@ -1,0 +1,92 @@
+package com.vnet.vnet_backend.config;
+
+import com.vnet.vnet_backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+@Configuration
+@RequiredArgsConstructor
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtFilter jwtFilter;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(UserRepository userRepository) {
+        return email -> userRepository.findByEmailIgnoreCase(email)
+                .filter(user -> Boolean.TRUE.equals(user.getIsVerified()))
+                .map(user -> org.springframework.security.core.userdetails.User
+                        .withUsername(user.getEmail())
+                        .password(user.getPassword())
+                        .authorities(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                        .build())
+                .orElseThrow(() -> new UsernameNotFoundException("User tidak ditemukan"));
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .httpBasic(httpBasic -> httpBasic.disable())
+            .formLogin(formLogin -> formLogin.disable())
+            .logout(logout -> logout.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/dashboard/**").hasAnyRole("ADMIN", "FINANCE", "MANAGER")
+                .requestMatchers(HttpMethod.GET, "/api/customers/**").hasAnyRole("ADMIN", "FINANCE", "NOC")
+                .requestMatchers(HttpMethod.POST, "/api/customers/**").hasAnyRole("ADMIN", "NOC")
+                .requestMatchers(HttpMethod.PUT, "/api/customers/*/status").hasAnyRole("ADMIN", "NOC")
+                .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/packages/**").hasAnyRole("ADMIN", "FINANCE")
+                .requestMatchers("/api/packages/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/import/stats").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/api/import/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/agents/performance").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/api/agents/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/addresses/insights").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                .requestMatchers("/api/**").hasRole("ADMIN")
+                .anyRequest().permitAll()
+            )
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+}

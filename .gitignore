@@ -1,0 +1,32 @@
+# ========================
+# VNet Dashboard - .gitignore
+# ========================
+
+# ── Backend ──────────────────────────────────────────────────────────────────
+backend/target/
+backend/.mvn/
+*.jar
+*.war
+*.class
+
+# Production config with secrets — JANGAN commit ini!
+backend/src/main/resources/application-prod.properties
+backend/src/main/resources/application-local.properties
+
+# ── Frontend ─────────────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# ── OS / IDE ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.log
+
+# ── Local Database ───────────────────────────────────────────────────────────
+mysql-data/
+*.db
