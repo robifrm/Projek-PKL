@@ -87,7 +87,7 @@
       <div class="card kpi-card kpi-card--dark">
         <div class="kpi-top">
           <span class="kpi-label" style="color: rgba(255, 255, 255, 0.55)"
-            >Customer terbanyak kecamatan</span
+            >Kecamatan Terbesar</span
           >
           <span class="badge badge--gold">Dense</span>
         </div>
@@ -222,8 +222,14 @@
               ><small>Pelanggan</small>
             </div>
             <div class="detail-metric">
-              <span>{{ selectedKecamatan.active }}</span>
-              <small>Aktif</small>
+              <span>{{ selectedKecamatan.active }}</span
+              ><small>Aktif</small>
+            </div>
+            <div class="detail-metric">
+              <span style="color: var(--gold)">{{
+                selectedKecamatan.isolir
+              }}</span
+              ><small>Isolir</small>
             </div>
           </div>
           <div class="kelurahan-list">
@@ -557,7 +563,37 @@
                       <line x1="12" y1="5" x2="12" y2="19" />
                       <polyline points="19 12 12 19 5 12" /></svg
                   ></span>
-                 </th>
+                </th>
+                <th class="th-sort" @click="toggleAddressSort('isolirRate')">
+                  Isolir %<span class="sort-icon"
+                    ><svg
+                      v-if="tableSortKey === 'isolirRate'"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                    >
+                      <polyline
+                        :points="
+                          tableSortDir === 'asc'
+                            ? '18 15 12 9 6 15'
+                            : '6 9 12 15 18 9'
+                        "
+                      /></svg
+                    ><svg
+                      v-else
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      opacity="0.35"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <polyline points="19 12 12 19 5 12" /></svg
+                  ></span>
+                </th>
                 <th>Paket Dominan</th>
                 <th>Agent</th>
               </tr>
@@ -578,12 +614,23 @@
                 </td>
                 <td class="td-num">{{ area.avgMbps }}</td>
                 <td>
+                  <span
+                    class="growth-tag"
+                    :class="
+                      area.isolirRate > 15
+                        ? 'growth-tag--down'
+                        : 'growth-tag--up'
+                    "
+                    >{{ area.isolirRate }}%</span
+                  >
+                </td>
+                <td>
                   <span class="type-tag">{{ area.dominantPackage }}</span>
                 </td>
                 <td>{{ area.topAgent }}</td>
               </tr>
               <tr v-if="filteredTableAreas.length === 0">
-                <td colspan="8" class="td-empty">Tidak ada data yang cocok</td>
+                <td colspan="9" class="td-empty">Tidak ada data yang cocok</td>
               </tr>
             </tbody>
           </table>
@@ -777,18 +824,32 @@ import { getAddressInsights } from "@/services/api";
 // Helper functions to normalize data presentation
 function cleanKecamatan(name) {
   if (!name || name.trim() === "" || name.trim() === "-") return "Lainnya";
-  return name.trim().toLowerCase().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(" ");
+  return name
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.substring(1))
+    .join(" ");
 }
 
 function cleanKelurahan(name) {
   if (!name || name.trim() === "" || name.trim() === "-") return "Lainnya";
-  return name.trim().toLowerCase().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(" ");
+  return name
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.substring(1))
+    .join(" ");
 }
 
 function normalizePackageName(name) {
   if (!name) return "Lainnya";
   const lower = name.toLowerCase().trim();
-  if (lower.includes("complimentary") || lower.includes("free") || lower.includes("staff")) {
+  if (
+    lower.includes("complimentary") ||
+    lower.includes("free") ||
+    lower.includes("staff")
+  ) {
     return "Complimentary";
   }
   const match = name.match(/(\d+(?:\.\d+)?)\s*(?:mbps|mb|m)/i);
@@ -796,7 +857,11 @@ function normalizePackageName(name) {
     const speed = parseFloat(match[1]);
     return `${speed} Mbps`;
   }
-  return name.trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(" ");
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.substring(1))
+    .join(" ");
 }
 
 // ── Chart.js lazy import ───────────────────────────────────────────────────
@@ -1259,14 +1324,8 @@ watch(tableSearch, () => {
 const initData = async () => {
   loading.value = true;
   try {
-    const payload = await getAddressInsights();
-    const rawAreas = payload?.areas || [];
-    areas.value = rawAreas.map(a => ({
-      ...a,
-      district: cleanKecamatan(a.district),
-      village: cleanKelurahan(a.village),
-      dominantPackage: normalizePackageName(a.dominantPackage)
-    }));
+    const data = await getAddressInsights();
+    areas.value = data || [];
   } catch (err) {
     console.warn("Failed to load address insights:", err);
   } finally {
@@ -1290,13 +1349,7 @@ onMounted(async () => {
 
   try {
     const payload = await getAddressInsights();
-    const rawAreas = payload?.areas || [];
-    areas.value = rawAreas.map(a => ({
-      ...a,
-      district: cleanKecamatan(a.district),
-      village: cleanKelurahan(a.village),
-      dominantPackage: normalizePackageName(a.dominantPackage)
-    }));
+    areas.value = payload?.areas || [];
   } catch {
     areas.value = [];
     console.warn("Failed to load address insights");
@@ -1377,7 +1430,7 @@ onUnmounted(() => {
 
 .kpi-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 .kpi-card {
@@ -1626,7 +1679,7 @@ onUnmounted(() => {
 /* Detail side */
 .detail-metrics {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin-bottom: 18px;
 }
