@@ -564,36 +564,7 @@
                       <polyline points="19 12 12 19 5 12" /></svg
                   ></span>
                 </th>
-                <th class="th-sort" @click="toggleAddressSort('isolirRate')">
-                  Isolir %<span class="sort-icon"
-                    ><svg
-                      v-if="tableSortKey === 'isolirRate'"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                    >
-                      <polyline
-                        :points="
-                          tableSortDir === 'asc'
-                            ? '18 15 12 9 6 15'
-                            : '6 9 12 15 18 9'
-                        "
-                      /></svg
-                    ><svg
-                      v-else
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      opacity="0.35"
-                    >
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <polyline points="19 12 12 19 5 12" /></svg
-                  ></span>
-                </th>
+
                 <th>Paket Dominan</th>
                 <th>Agent</th>
               </tr>
@@ -613,24 +584,14 @@
                   {{ area.active }}
                 </td>
                 <td class="td-num">{{ area.avgMbps }}</td>
-                <td>
-                  <span
-                    class="growth-tag"
-                    :class="
-                      area.isolirRate > 15
-                        ? 'growth-tag--down'
-                        : 'growth-tag--up'
-                    "
-                    >{{ area.isolirRate }}%</span
-                  >
-                </td>
+
                 <td>
                   <span class="type-tag">{{ area.dominantPackage }}</span>
                 </td>
                 <td>{{ area.topAgent }}</td>
               </tr>
               <tr v-if="filteredTableAreas.length === 0">
-                <td colspan="9" class="td-empty">Tidak ada data yang cocok</td>
+                <td colspan="8" class="td-empty">Tidak ada data yang cocok</td>
               </tr>
             </tbody>
           </table>
@@ -720,7 +681,7 @@
           <div class="pkg-legend-row">
             <div
               class="pkg-legend-item"
-              v-for="(pkg, i) in uniquePackages"
+              v-for="(pkg, i) in topDisplayPackages"
               :key="pkg"
             >
               <span
@@ -728,6 +689,13 @@
                 :style="{ background: PIE_COLORS[i % PIE_COLORS.length] }"
               ></span>
               <span class="pkg-legend-label">{{ pkg }}</span>
+            </div>
+            <div class="pkg-legend-item">
+              <span
+                class="pkg-legend-dot"
+                :style="{ background: 'var(--text-3)' }"
+              ></span>
+              <span class="pkg-legend-label">Lainnya</span>
             </div>
           </div>
 
@@ -747,9 +715,12 @@
                   :style="{
                     width: pkg.pct + '%',
                     background:
-                      PIE_COLORS[
-                        uniquePackages.indexOf(pkg.name) % PIE_COLORS.length
-                      ],
+                      pkg.name === 'Lainnya'
+                        ? 'var(--text-3)'
+                        : PIE_COLORS[
+                            topDisplayPackages.indexOf(pkg.name) %
+                              PIE_COLORS.length
+                          ],
                   }"
                   :title="
                     pkg.name +
@@ -1016,12 +987,29 @@ const kecamatanPackageMap = computed(() => {
   return map;
 });
 
-const uniquePackages = computed(() => {
-  const pkgSet = new Set();
+// Get top packages to display (limit to 8 to avoid cluttering)
+const topDisplayPackages = computed(() => {
+  const totalCust = areas.value.reduce((s, a) => s + a.customers, 0) || 1;
+  const pkgTotals = {};
   for (const area of areas.value) {
-    pkgSet.add(area.dominantPackage || "Lainnya");
+    const pkg = area.dominantPackage || "Lainnya";
+    pkgTotals[pkg] = (pkgTotals[pkg] || 0) + area.customers;
   }
-  return [...pkgSet].sort();
+  return Object.entries(pkgTotals)
+    .map(([name, count]) => ({
+      name,
+      count,
+      pct: Math.round((count / totalCust) * 100),
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8)
+    .map((p) => p.name);
+});
+
+const uniquePackages = computed(() => {
+  const top = new Set(topDisplayPackages.value);
+  top.add("Lainnya");
+  return [...top].sort();
 });
 
 const topPackagesSummary = computed(() => {
@@ -1041,12 +1029,22 @@ const topPackagesSummary = computed(() => {
     .slice(0, 6);
 });
 
-// Enhance kecamatanGroups with packageBreakdown
+// Enhance kecamatanGroups with packageBreakdown (consolidate small packages into "Lainnya")
 const kecamatanGroupsWithPackages = computed(() => {
+  const topSet = new Set(topDisplayPackages.value);
   return kecamatanGroups.value.map((g) => {
     const pkgMap = kecamatanPackageMap.value.get(g.name) || {};
     const total = g.customers || 1;
-    const packageBreakdown = Object.entries(pkgMap)
+    // Consolidate packages not in top 8 into "Lainnya"
+    const consolidatedMap = {};
+    for (const [name, count] of Object.entries(pkgMap)) {
+      if (topSet.has(name)) {
+        consolidatedMap[name] = count;
+      } else {
+        consolidatedMap["Lainnya"] = (consolidatedMap["Lainnya"] || 0) + count;
+      }
+    }
+    const packageBreakdown = Object.entries(consolidatedMap)
       .map(([name, count]) => ({
         name,
         count,
@@ -1430,14 +1428,14 @@ onUnmounted(() => {
 
 .kpi-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
 }
 .kpi-card {
-  padding: 18px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .kpi-card--dark {
   background: var(--navy);
