@@ -9,7 +9,6 @@
         </p>
       </div>
       <div class="page-actions">
-
         <button class="btn btn--primary" @click="showRegisterModal = true">
           <svg
             viewBox="0 0 24 24"
@@ -873,28 +872,41 @@
       v-if="showConfirmModal"
       class="modal-overlay"
       @click.self="showConfirmModal = false"
-      style="z-index: 1000;"
+      style="z-index: 1000"
     >
       <div class="modal-card modal-card--confirm">
         <div class="modal-header">
           <div class="confirm-title-wrapper">
             <div class="confirm-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
             </div>
             <h2>{{ confirmTitle }}</h2>
           </div>
-          <button @click="showConfirmModal = false" class="close-btn">&times;</button>
+          <button @click="showConfirmModal = false" class="close-btn">
+            &times;
+          </button>
         </div>
         <div class="modal-body">
           <p class="confirm-text">{{ confirmMessage }}</p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn--ghost" @click="showConfirmModal = false">Batal</button>
-          <button class="btn btn--danger" @click="executeConfirm">Ya, Hapus</button>
+          <button class="btn btn--ghost" @click="showConfirmModal = false">
+            Batal
+          </button>
+          <button class="btn btn--danger" @click="executeConfirm">
+            Ya, Hapus
+          </button>
         </div>
       </div>
     </div>
@@ -914,12 +926,21 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label">Organization Name</label>
+            <label class="form-label">Customer ID (Cust ID)</label>
+            <input
+              v-model="newCustomer.custId"
+              type="text"
+              class="form-input"
+              placeholder="e.g. C1210 (Leave blank to auto-generate)"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Customer Name</label>
             <input
               v-model="newCustomer.name"
               type="text"
               class="form-input"
-              placeholder="e.g. PT. VNet Maju"
+              placeholder="Full Name or Organization Name"
             />
           </div>
           <div class="form-group">
@@ -1002,13 +1023,7 @@
 </template>
 
 <script setup>
-import {
-  computed,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { Line } from "vue-chartjs";
 import {
@@ -1084,7 +1099,6 @@ function executeConfirm() {
 const selectedCustomer = ref(null);
 const showDetailPanel = ref(false);
 
-
 function openDetail(c) {
   selectedCustomer.value = c;
   showDetailPanel.value = true;
@@ -1098,6 +1112,7 @@ const loading = ref(false);
 const overviewData = ref(null);
 
 const newCustomer = ref({
+  custId: "",
   name: "",
   packageId: "",
   address: "",
@@ -1111,6 +1126,7 @@ async function submitRegistration() {
 
   try {
     const payload = {
+      custId: newCustomer.value.custId.trim() || null,
       nama: newCustomer.value.name,
       status: "ACTIVE",
       pkg: {
@@ -1134,6 +1150,7 @@ async function submitRegistration() {
     showRegisterModal.value = false;
     toast.success("Pelanggan berhasil ditambahkan");
     newCustomer.value = {
+      custId: "",
       name: "",
       packageId: packagesList.value[0]?.id || "",
       address: "",
@@ -1171,7 +1188,7 @@ async function removeCustomer(c) {
       } catch (error) {
         toast.error("Gagal menghapus pelanggan: " + error.message);
       }
-    }
+    },
   );
 }
 
@@ -1361,8 +1378,6 @@ function resetFilters() {
     isResetting.value = false;
   }, 600);
 }
-
-
 
 function formatDate(value) {
   if (!value) return "-";
@@ -2682,7 +2697,7 @@ onUnmounted(() => {
 
 .modal-card--confirm {
   max-width: 440px !important;
-  border-top: 4px solid var(--red-warn, #EF4444) !important;
+  border-top: 4px solid var(--red-warn, #ef4444) !important;
 }
 .confirm-title-wrapper {
   display: flex;
@@ -2694,7 +2709,7 @@ onUnmounted(() => {
   height: 36px;
   border-radius: 50%;
   background: #fdeceb;
-  color: var(--red-warn, #EF4444);
+  color: var(--red-warn, #ef4444);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2711,7 +2726,7 @@ onUnmounted(() => {
   margin: 0;
 }
 .btn--danger {
-  background: var(--red-warn, #EF4444) !important;
+  background: var(--red-warn, #ef4444) !important;
   color: #fff !important;
   border: none !important;
 }
