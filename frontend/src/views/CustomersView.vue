@@ -868,6 +868,36 @@
         </button>
       </div>
     </div>
+    <!-- Custom Confirm Modal -->
+    <div
+      v-if="showConfirmModal"
+      class="modal-overlay"
+      @click.self="showConfirmModal = false"
+      style="z-index: 1000;"
+    >
+      <div class="modal-card modal-card--confirm">
+        <div class="modal-header">
+          <div class="confirm-title-wrapper">
+            <div class="confirm-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <h2>{{ confirmTitle }}</h2>
+          </div>
+          <button @click="showConfirmModal = false" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="confirm-text">{{ confirmMessage }}</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn--ghost" @click="showConfirmModal = false">Batal</button>
+          <button class="btn btn--danger" @click="executeConfirm">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal Register (Simple Placeholder) -->
     <div
@@ -1033,6 +1063,24 @@ function toggleSort(key) {
   page.value = 1;
 }
 const showRegisterModal = ref(false);
+const showConfirmModal = ref(false);
+const confirmTitle = ref("");
+const confirmMessage = ref("");
+const onConfirmAction = ref(null);
+
+function triggerConfirm(title, message, action) {
+  confirmTitle.value = title;
+  confirmMessage.value = message;
+  onConfirmAction.value = action;
+  showConfirmModal.value = true;
+}
+
+function executeConfirm() {
+  if (onConfirmAction.value) {
+    onConfirmAction.value();
+  }
+  showConfirmModal.value = false;
+}
 const selectedCustomer = ref(null);
 const showDetailPanel = ref(false);
 
@@ -1111,16 +1159,20 @@ async function toggleStatus(c) {
 }
 
 async function removeCustomer(c) {
-  if (confirm(`Apakah Anda yakin ingin menghapus pelanggan ${c.org}?`)) {
-    try {
-      await deleteCustomer(c.dbId);
-      await fetchCustomers();
-      activeMenu.value = null;
-      toast.success("Pelanggan berhasil dihapus");
-    } catch (error) {
-      toast.error("Gagal menghapus pelanggan: " + error.message);
+  triggerConfirm(
+    "Hapus Pelanggan",
+    `Apakah Anda yakin ingin menghapus pelanggan ${c.org}? Tindakan ini tidak dapat dibatalkan.`,
+    async () => {
+      try {
+        await deleteCustomer(c.dbId);
+        await fetchCustomers();
+        activeMenu.value = null;
+        toast.success("Pelanggan berhasil dihapus");
+      } catch (error) {
+        toast.error("Gagal menghapus pelanggan: " + error.message);
+      }
     }
-  }
+  );
 }
 
 const rowColors = [
@@ -1820,6 +1872,8 @@ onUnmounted(() => {
 .table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 80px;
+  margin-bottom: -80px;
 }
 .cust-table {
   width: 100%;
@@ -1961,18 +2015,19 @@ onUnmounted(() => {
 
 .action-dropdown {
   position: absolute;
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   box-shadow: var(--shadow-lg);
-  z-index: 10;
-  min-width: 120px;
-  padding: 4px;
+  z-index: 50;
+  min-width: 135px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 .action-dropdown button {
   background: none;
@@ -2625,7 +2680,45 @@ onUnmounted(() => {
   border-color: var(--text-3);
 }
 
-
+.modal-card--confirm {
+  max-width: 440px !important;
+  border-top: 4px solid var(--red-warn, #EF4444) !important;
+}
+.confirm-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.confirm-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fdeceb;
+  color: var(--red-warn, #EF4444);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.confirm-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.confirm-text {
+  font-size: 14.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0;
+}
+.btn--danger {
+  background: var(--red-warn, #EF4444) !important;
+  color: #fff !important;
+  border: none !important;
+}
+.btn--danger:hover {
+  background: #dc2626 !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4) !important;
+}
 
 /* Print Styles */
 @media print {

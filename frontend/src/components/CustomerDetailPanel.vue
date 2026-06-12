@@ -272,6 +272,46 @@
 
     </div><!-- end panel -->
   </Transition>
+
+  <!-- Custom Confirm Modal -->
+  <Transition name="backdrop">
+    <div
+      v-if="showConfirmModal"
+      class="panel-backdrop"
+      style="z-index: 300;"
+      @click="showConfirmModal = false"
+    />
+  </Transition>
+  <Transition name="panel-slide">
+    <div
+      v-if="showConfirmModal"
+      class="confirm-modal-overlay"
+      style="z-index: 301;"
+      @click.self="showConfirmModal = false"
+    >
+      <div class="confirm-modal-card">
+        <div class="confirm-modal-header">
+          <div class="confirm-title-wrap">
+            <span class="confirm-alert-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </span>
+            <span class="confirm-title">Hapus Pelanggan</span>
+          </div>
+        </div>
+        <div class="confirm-modal-body">
+          Apakah Anda yakin ingin menghapus pelanggan <strong>{{ detail?.nama }}</strong>? Tindakan ini tidak dapat dibatalkan.
+        </div>
+        <div class="confirm-modal-footer">
+          <button class="btn btn--action-copy" @click="showConfirmModal = false" style="margin-bottom: 0; width: auto; padding: 8px 16px;">Batal</button>
+          <button class="btn btn--action-delete" @click="executeConfirmDelete" style="margin-top: 0; width: auto; padding: 8px 16px; background: var(--red-warn); color: #fff; border: none;">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -290,6 +330,7 @@ const toast   = useToast()
 const detail  = ref(null)
 const loading = ref(false)
 const error   = ref(false)
+const showConfirmModal = ref(false)
 
 // Load detail when customer changes
 watch(() => props.customer, async (c) => {
@@ -332,15 +373,18 @@ async function handleToggleStatus() {
 
 async function handleDelete() {
   if (!detail.value) return
-  if (confirm(`Apakah Anda yakin ingin menghapus pelanggan ${detail.value.nama}?`)) {
-    try {
-      await deleteCustomer(detail.value.id)
-      toast.success("Pelanggan berhasil dihapus")
-      emit('close')
-      emit('refresh')
-    } catch (error) {
-      toast.error("Gagal menghapus pelanggan: " + error.message)
-    }
+  showConfirmModal.value = true
+}
+
+async function executeConfirmDelete() {
+  try {
+    await deleteCustomer(detail.value.id)
+    toast.success("Pelanggan berhasil dihapus")
+    showConfirmModal.value = false
+    emit('close')
+    emit('refresh')
+  } catch (error) {
+    toast.error("Gagal menghapus pelanggan: " + error.message)
   }
 }
 
@@ -821,5 +865,64 @@ function formatRp(val) {
   width: 14px;
   height: 14px;
   stroke-width: 2px;
+}
+
+/* === Confirm Modal === */
+.confirm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.confirm-modal-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-top: 4px solid var(--red-warn);
+}
+.confirm-modal-header {
+  padding: 18px 20px 10px 20px;
+}
+.confirm-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.confirm-alert-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--red-warn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.confirm-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.confirm-modal-body {
+  padding: 10px 20px 20px 20px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.confirm-modal-footer {
+  padding: 12px 20px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 </style>
