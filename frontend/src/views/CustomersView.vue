@@ -931,7 +931,7 @@
               v-model="newCustomer.custId"
               type="text"
               class="form-input"
-              placeholder="e.g. C1210 (Leave blank to auto-generate)"
+              placeholder="VN00000 or (Leave blank to auto-generate)"
             />
           </div>
           <div class="form-group">
@@ -964,12 +964,12 @@
             ></textarea>
           </div>
           <div class="form-group">
-            <label class="form-label">Agent Code / Name</label>
+            <label class="form-label">Agent Name</label>
             <input
               v-model="newCustomer.agent"
               type="text"
               class="form-input"
-              placeholder="e.g. AGT-001"
+              placeholder="Assigned Agent (optional)"
             />
           </div>
           <div class="form-grid">

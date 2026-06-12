@@ -128,20 +128,20 @@
           <div class="telemetry-card">
             <div class="telemetry-row">
               <span class="telemetry-label">Router ONT Status</span>
-              <span class="telemetry-status" :class="detail.isolir ? 'status--offline' : 'status--online'">
+              <span class="telemetry-status status--unknown">
                 <span class="status-dot-blink"></span>
-                {{ detail.isolir ? 'Offline / Isolir' : 'Online / Connected' }}
+                —
               </span>
             </div>
             
             <div class="telemetry-grid">
               <div class="telemetry-field">
                 <span class="telemetry-field-lbl">GPON Rx Power</span>
-                <span class="telemetry-field-val" :class="detail.isolir ? 'text-warn' : 'text-teal'">{{ detail.isolir ? '—' : '-19.5 dBm' }}</span>
+                <span class="telemetry-field-val">—</span>
               </div>
               <div class="telemetry-field">
                 <span class="telemetry-field-lbl">Ping Latency</span>
-                <span class="telemetry-field-val" :class="detail.isolir ? 'text-warn' : 'text-teal'">{{ detail.isolir ? '—' : '12 ms' }}</span>
+                <span class="telemetry-field-val">—</span>
               </div>
             </div>
 
@@ -149,10 +149,10 @@
             <div class="bandwidth-wrap">
               <div class="bandwidth-header">
                 <span class="bandwidth-title">Kuota Terpakai (Bulan Ini)</span>
-                <span class="bandwidth-value">{{ detail.isolir ? '—' : '342.8 GB / Unlimited' }}</span>
+                <span class="bandwidth-value">—</span>
               </div>
               <div class="bandwidth-bar-bg">
-                <div class="bandwidth-bar-fill" :style="{ width: detail.isolir ? '0%' : '65%' }"></div>
+                <div class="bandwidth-bar-fill" style="width: 0%"></div>
               </div>
             </div>
           </div>
@@ -166,11 +166,7 @@
             </svg>
             Finansial
           </div>
-          <div class="panel-grid panel-grid--3">
-            <div class="panel-field panel-field--highlight">
-              <div class="panel-field-label">Harga Custom</div>
-              <div class="panel-field-value">{{ formatRp(detail.price) }}</div>
-            </div>
+          <div class="panel-grid">
             <div class="panel-field panel-field--highlight panel-field--green">
               <div class="panel-field-label">Profit</div>
               <div class="panel-field-value text-green">{{ formatRp(detail.profit) }}</div>
@@ -735,6 +731,10 @@ function formatRp(val) {
 .status--offline {
   background: rgba(231, 76, 60, 0.15);
   color: var(--red-warn);
+}
+.status--unknown {
+  background: rgba(120, 130, 140, 0.15);
+  color: var(--text-3);
 }
 .status-dot-blink {
   width: 6px;
