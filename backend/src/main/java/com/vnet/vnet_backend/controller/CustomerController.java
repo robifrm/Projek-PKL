@@ -110,8 +110,8 @@ public class CustomerController {
             Agent ag = c.getAgent();
             Map<String, Object> agent = new LinkedHashMap<>();
             agent.put("nama",     ag.getNama());
-            agent.put("noTelpon", ag.getNoTelpon());
-            agent.put("area",     ag.getArea());
+            agent.put("noTelpon", "-");
+            agent.put("area",     "-");
             agent.put("status",   ag.getStatus() != null ? ag.getStatus().name() : "-");
             detail.put("agent",   agent);
         }

@@ -2612,5 +2612,44 @@ onUnmounted(() => {
   .kpi-value {
     font-size: 32px;
   }
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+    padding: 16px !important;
+  }
+  .chart-tabs-wrapper {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .city-pie-wrap {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+  }
+  .city-legend {
+    width: 100% !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    padding-right: 0 !important;
+  }
+}
+@media (max-width: 480px) {
+  .pkg-row {
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: auto auto !important;
+    gap: 6px !important;
+  }
+  .pkg-bar-bg {
+    grid-column: 1 / -1 !important;
+    margin-top: 2px !important;
+  }
+  .pkg-pct {
+    justify-self: end !important;
+    grid-row: 1 !important;
+    grid-column: 2 !important;
+  }
 }
 </style>

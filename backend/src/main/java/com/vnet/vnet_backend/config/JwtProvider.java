@@ -26,7 +26,7 @@ public class JwtProvider {
         Date validity = new Date(now.getTime() + this.tokenValidityInMilliseconds);
 
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(user.getUsername())
                 .claim("userId", user.getId())
                 .claim("name", user.getName())
                 .claim("role", user.getRole().name())
@@ -45,7 +45,7 @@ public class JwtProvider {
         }
     }
 
-    public String getEmail(String token) {
+    public String getUsername(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()

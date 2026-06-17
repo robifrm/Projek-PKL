@@ -45,13 +45,11 @@ public class DatabaseSeeder implements CommandLineRunner {
             User admin = User.builder()
                     .name(seedAdminName)
                     .username("admin")
-                    .email(seedAdminEmail)
                     .password(passwordEncoder.encode(seedAdminPassword))
                     .role(Role.SUPER_ADMIN)
-                    .isVerified(true)
                     .build();
             userRepository.save(admin);
-            System.out.println("[SEEDER] Default Admin seeded (email: " + seedAdminEmail + ")");
+            System.out.println("[SEEDER] Default Admin seeded (username: admin)");
         }
 
         // 2. Seed Internet Packages

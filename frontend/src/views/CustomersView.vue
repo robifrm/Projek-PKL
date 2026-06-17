@@ -2735,6 +2735,53 @@ onUnmounted(() => {
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.4) !important;
 }
 
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .charts-row {
+    grid-template-columns: 1fr !important;
+  }
+  .bottom-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (max-width: 768px) {
+  .kpi-row {
+    grid-template-columns: 1fr !important;
+  }
+  .table-toolbar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .filters-left, .filters-right {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+  .filters-right {
+    justify-content: space-between !important;
+  }
+}
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .page-actions {
+    width: 100% !important;
+  }
+  .page-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .table-footer {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+}
+
 /* Print Styles */
 @media print {
   .page-header,

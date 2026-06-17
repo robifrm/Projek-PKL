@@ -19,10 +19,6 @@ public class Agent {
     @Column(nullable = false)
     private String nama;
 
-    private String noTelpon;
-
-    private String area;
-
     private Double komisi;
 
     @Enumerated(EnumType.STRING)

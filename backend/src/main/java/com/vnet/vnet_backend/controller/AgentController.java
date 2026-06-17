@@ -58,8 +58,6 @@ public class AgentController {
         Agent agent = agentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Agent not found"));
         agent.setNama(payload.getNama());
-        agent.setNoTelpon(payload.getNoTelpon());
-        agent.setArea(payload.getArea());
         agent.setKomisi(payload.getKomisi());
         if (payload.getStatus() != null) {
             agent.setStatus(payload.getStatus());

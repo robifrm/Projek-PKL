@@ -31,35 +31,18 @@ public class OtpService {
     }
 
     public void assignOtp(User user, String rawOtp) {
-        user.setOtpCode(passwordEncoder.encode(rawOtp));
-        user.setOtpExpiredAt(LocalDateTime.now().plusMinutes(expirationMinutes));
+        // OTP is disabled, do nothing
     }
 
     public boolean isOtpValid(User user, String rawOtp) {
-        if (user == null || !StringUtils.hasText(rawOtp)) {
+        if (user == null || !org.springframework.util.StringUtils.hasText(rawOtp)) {
             return false;
         }
-
-        // Developer master OTP bypass for testing (e.g. Resend sandbox limitation)
-        if ("123456".equals(rawOtp.trim()) || "000000".equals(rawOtp.trim())) {
-            return true;
-        }
-
-        if (!StringUtils.hasText(user.getOtpCode())) {
-            return false;
-        }
-
-        LocalDateTime expiresAt = user.getOtpExpiredAt();
-        if (expiresAt == null || expiresAt.isBefore(LocalDateTime.now())) {
-            return false;
-        }
-
-        return passwordEncoder.matches(rawOtp.trim(), user.getOtpCode());
+        return true;
     }
 
     public void clearOtp(User user) {
-        user.setOtpCode(null);
-        user.setOtpExpiredAt(null);
+        // OTP is disabled, do nothing
     }
 
     public long getExpirationMinutes() {

@@ -58,10 +58,8 @@ class CustomerControllerTest {
         User admin = User.builder()
                 .name("Admin")
                 .username("admin")
-                .email("admin@test.com")
                 .password(passwordEncoder.encode("pass"))
                 .role(Role.SUPER_ADMIN)
-                .isVerified(true)
                 .build();
         userRepository.save(admin);
         adminToken = jwtProvider.generateToken(admin);

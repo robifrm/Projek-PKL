@@ -892,4 +892,29 @@ const handleDelete = async (id, name) => {
   border-top-color: #fff;
   animation: spin 0.6s linear infinite;
 }
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .charts-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .page-actions {
+    width: 100%;
+  }
+  .page-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
 </style>

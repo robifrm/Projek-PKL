@@ -54,26 +54,24 @@ class SecurityEndpointTest {
         saveUser("admin@test.id", "admin", Role.SUPER_ADMIN);
         saveUser("staff@test.id", "staff", Role.STAFF);
 
-        adminToken   = generateTokenFor(Role.SUPER_ADMIN,   "admin@test.id");
-        staffToken   = generateTokenFor(Role.STAFF,         "staff@test.id");
+        adminToken   = generateTokenFor(Role.SUPER_ADMIN,   "admin");
+        staffToken   = generateTokenFor(Role.STAFF,         "staff");
     }
 
     private void saveUser(String email, String username, Role role) {
         User u = User.builder()
                 .name("Test User")
                 .username(username)
-                .email(email)
                 .password(passwordEncoder.encode("password"))
                 .role(role)
-                .isVerified(true)
                 .build();
         userRepository.save(u);
     }
 
-    private String generateTokenFor(Role role, String email) {
+    private String generateTokenFor(Role role, String username) {
         User u = new User();
-        u.setId(1L); u.setEmail(email); u.setName("Test");
-        u.setUsername("testuser"); u.setRole(role); u.setIsVerified(true);
+        u.setId(1L); u.setName("Test");
+        u.setUsername(username); u.setRole(role);
         u.setPassword("hashed");
         return jwtProvider.generateToken(u);
     }
@@ -164,7 +162,7 @@ class SecurityEndpointTest {
         org.springframework.test.util.ReflectionTestUtils.setField(shortLived, "tokenValidityInMilliseconds", -1000L);
 
         User u = new User();
-        u.setId(1L); u.setEmail("x@x.id"); u.setRole(Role.SUPER_ADMIN); u.setIsVerified(true);
+        u.setId(1L); u.setRole(Role.SUPER_ADMIN);
         u.setUsername("x"); u.setName("X"); u.setPassword("h");
         String expiredToken = shortLived.generateToken(u);
 

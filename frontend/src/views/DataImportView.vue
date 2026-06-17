@@ -577,4 +577,38 @@ onMounted(loadImportStats)
   animation: spin 12s linear infinite;
 }
 .engine-gear svg { width: 100%; height: 100%; }
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .import-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .drop-zone__inner {
+    padding: 32px 16px 24px;
+  }
+  .drop-title {
+    font-size: 18px;
+  }
+  .security-tags {
+    flex-direction: column;
+  }
+  .sec-tag {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-tag:last-child {
+    border-bottom: none;
+  }
+  .btn-process {
+    padding: 14px;
+    font-size: 13px;
+  }
+}
 </style>

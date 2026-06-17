@@ -73,14 +73,7 @@ public class AuthController {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fitur registrasi dinonaktifkan");
     }
 
-    @PostMapping("/resend-otp")
-    public ResponseEntity<Map<String, Object>> resendOtp(@RequestBody Map<String, Object> payload) {
-        String email = firstText(payload, "email", "sessionId");
-        if (email == null || email.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email / sessionId wajib diisi");
-        }
-        return ResponseEntity.ok(responseBody(authService.resendOtp(email)));
-    }
+
     @PostMapping("/login-init")
     public ResponseEntity<AuthResponse> loginInit(@RequestBody Map<String, Object> payload) {
         validateCaptchaIfPresent(payload);

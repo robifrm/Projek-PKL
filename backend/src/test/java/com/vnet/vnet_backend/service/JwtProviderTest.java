@@ -31,13 +31,12 @@ class JwtProviderTest {
         ReflectionTestUtils.setField(jwtProvider, "tokenValidityInMilliseconds", TOKEN_VALIDITY_MS);
     }
 
-    private User makeUser(Long id, String email, String name, Role role) {
+    private User makeUser(Long id, String username, String name, Role role) {
         User u = new User();
         u.setId(id);
-        u.setEmail(email);
+        u.setUsername(username);
         u.setName(name);
         u.setRole(role);
-        u.setIsVerified(true);
         return u;
     }
 
@@ -48,7 +47,7 @@ class JwtProviderTest {
     @Test
     @DisplayName("generateToken() harus menghasilkan string JWT yang tidak null/kosong")
     void generateToken_shouldReturnNonNullToken() {
-        User user = makeUser(1L, "admin@vnet.id", "Admin VNet", Role.SUPER_ADMIN);
+        User user = makeUser(1L, "admin", "Admin VNet", Role.SUPER_ADMIN);
         String token = jwtProvider.generateToken(user);
 
         assertThat(token).isNotNull();
@@ -60,8 +59,8 @@ class JwtProviderTest {
     @Test
     @DisplayName("generateToken() menghasilkan token berbeda untuk user berbeda")
     void generateToken_differentUsersProduceDifferentTokens() {
-        User admin = makeUser(1L, "admin@vnet.id", "Admin", Role.SUPER_ADMIN);
-        User noc   = makeUser(2L, "noc@vnet.id",   "NOC",   Role.STAFF);
+        User admin = makeUser(1L, "admin", "Admin", Role.SUPER_ADMIN);
+        User noc   = makeUser(2L, "noc",   "NOC",   Role.STAFF);
 
         String tokenAdmin = jwtProvider.generateToken(admin);
         String tokenNoc   = jwtProvider.generateToken(noc);
@@ -76,7 +75,7 @@ class JwtProviderTest {
     @Test
     @DisplayName("validateToken() harus return true untuk token valid yang baru dibuat")
     void validateToken_withValidToken_shouldReturnTrue() {
-        User user = makeUser(1L, "user@vnet.id", "User", Role.STAFF);
+        User user = makeUser(1L, "user", "User", Role.STAFF);
         String token = jwtProvider.generateToken(user);
 
         assertThat(jwtProvider.validateToken(token)).isTrue();
@@ -98,7 +97,7 @@ class JwtProviderTest {
         ReflectionTestUtils.setField(otherProvider, "jwtSecret", "different_secret_key_at_least_32chars_");
         ReflectionTestUtils.setField(otherProvider, "tokenValidityInMilliseconds", TOKEN_VALIDITY_MS);
 
-        User user = makeUser(1L, "user@vnet.id", "User", Role.STAFF);
+        User user = makeUser(1L, "user", "User", Role.STAFF);
         String tokenFromOther = otherProvider.generateToken(user);
 
         // Provider asli tidak bisa validasi token dari secret lain
@@ -112,23 +111,23 @@ class JwtProviderTest {
         ReflectionTestUtils.setField(shortLivedProvider, "jwtSecret", TEST_SECRET);
         ReflectionTestUtils.setField(shortLivedProvider, "tokenValidityInMilliseconds", -1000L); // sudah expired
 
-        User user = makeUser(1L, "user@vnet.id", "User", Role.STAFF);
+        User user = makeUser(1L, "user", "User", Role.STAFF);
         String expiredToken = shortLivedProvider.generateToken(user);
 
         assertThat(jwtProvider.validateToken(expiredToken)).isFalse();
     }
 
     // ─────────────────────────────────────────────
-    // getEmail()
+    // getUsername()
     // ─────────────────────────────────────────────
 
     @Test
-    @DisplayName("getEmail() harus mengembalikan email yang sama dengan yang digunakan saat generate")
-    void getEmail_shouldReturnCorrectEmail() {
-        String email = "manager@vnet.id";
-        User user = makeUser(3L, email, "Manager", Role.STAFF);
+    @DisplayName("getUsername() harus mengembalikan username yang sama dengan yang digunakan saat generate")
+    void getUsername_shouldReturnCorrectUsername() {
+        String username = "manager";
+        User user = makeUser(3L, username, "Manager", Role.STAFF);
         String token = jwtProvider.generateToken(user);
 
-        assertThat(jwtProvider.getEmail(token)).isEqualTo(email);
+        assertThat(jwtProvider.getUsername(token)).isEqualTo(username);
     }
 }

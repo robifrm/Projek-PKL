@@ -212,3 +212,29 @@ export function deleteAgentRecord(id) {
     method: "DELETE",
   });
 }
+
+export function updateProfile(payload) {
+  return apiFetch("/users/profile", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function changePassword(payload) {
+  return apiFetch("/users/change-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getSystemConfig() {
+  return apiFetch("/system-config");
+}
+
+export function saveSystemConfig(payload) {
+  return apiFetch("/system-config", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+

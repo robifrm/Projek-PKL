@@ -10,10 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "users",
-        indexes = {
-                @Index(name = "idx_users_email", columnList = "email")
-        }
+        name = "users"
 )
 @Data
 @NoArgsConstructor
@@ -31,27 +28,12 @@ public class User {
     @Column(unique = true, nullable = false, length = 255)
     private String username;
 
-    @Column(unique = true, nullable = false, length = 160)
-    private String email;
-
-    @Column(length = 255)
-    private String phone;
-
     @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean isVerified = false;
-
-    @Column(length = 120)
-    private String otpCode;
-
-    private LocalDateTime otpExpiredAt;
 
     @CreationTimestamp
     @Column(updatable = false)

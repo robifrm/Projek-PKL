@@ -77,16 +77,14 @@ class AuthFlowIntegrationTest {
         User user = User.builder()
                 .name("Zayn Malik")
                 .username("zayn123")
-                .email("zayn@vnet.id")
                 .password(passwordEncoder.encode("zaynpass"))
                 .role(Role.STAFF)
-                .isVerified(true)
                 .build();
         userRepository.save(user);
 
         // 3. LOGIN HARUS SUKSES
         Map<String, String> loginBody = Map.of(
-            "email", "zayn@vnet.id",
+            "email", "zayn123",
             "password", "zaynpass"
         );
 
@@ -95,7 +93,7 @@ class AuthFlowIntegrationTest {
                 .content(objectMapper.writeValueAsString(loginBody)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
-                .andExpect(jsonPath("$.email").value("zayn@vnet.id"))
+                .andExpect(jsonPath("$.email").value("zayn123"))
                 .andExpect(jsonPath("$.role").value("STAFF"));
     }
 }

@@ -81,66 +81,68 @@
       </div>
 
       <!-- Table -->
-      <table class="records-table">
-        <thead>
-          <tr>
-            <th>Cust ID</th>
-            <th>Customer Info</th>
-            <th @click="toggleSort('regDate')" class="sortable-th" :class="{ 'is-sorted': sortColumn === 'regDate' }">
-              <div class="th-content">
-                Reg. Date
-                <div class="sort-arrows">
-                  <svg class="sort-arrow" :class="{ active: sortColumn === 'regDate' && !sortDesc }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                  <svg class="sort-arrow" :class="{ active: sortColumn === 'regDate' && sortDesc }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="table-wrap">
+        <table class="records-table">
+          <thead>
+            <tr>
+              <th>Cust ID</th>
+              <th>Customer Info</th>
+              <th @click="toggleSort('regDate')" class="sortable-th" :class="{ 'is-sorted': sortColumn === 'regDate' }">
+                <div class="th-content">
+                  Reg. Date
+                  <div class="sort-arrows">
+                    <svg class="sort-arrow" :class="{ active: sortColumn === 'regDate' && !sortDesc }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                    <svg class="sort-arrow" :class="{ active: sortColumn === 'regDate' && sortDesc }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
                 </div>
-              </div>
-            </th>
-            <th @click="toggleSort('actDate')" class="sortable-th" :class="{ 'is-sorted': sortColumn === 'actDate' }">
-              <div class="th-content">
-                Act. Date
-                <div class="sort-arrows">
-                  <svg class="sort-arrow" :class="{ active: sortColumn === 'actDate' && !sortDesc }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                  <svg class="sort-arrow" :class="{ active: sortColumn === 'actDate' && sortDesc }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </th>
+              <th @click="toggleSort('actDate')" class="sortable-th" :class="{ 'is-sorted': sortColumn === 'actDate' }">
+                <div class="th-content">
+                  Act. Date
+                  <div class="sort-arrows">
+                    <svg class="sort-arrow" :class="{ active: sortColumn === 'actDate' && !sortDesc }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                    <svg class="sort-arrow" :class="{ active: sortColumn === 'actDate' && sortDesc }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
                 </div>
-              </div>
-            </th>
-            <th>Package</th>
-            <th>Status</th>
-            <th>Agent</th>
-            <th>Action</th>
-            <th>Log</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in paginatedRows" :key="row.id" class="record-row">
-            <td><span class="cust-id">{{ row.custId }}</span></td>
-            <td>
-              <div class="cust-name">{{ row.name }}</div>
-              <div class="cust-phone">{{ row.phone || '-' }}</div>
-              <div class="cust-phone" v-if="row.email" style="opacity: 0.7; font-size: 0.85em;">{{ row.email }}</div>
-            </td>
-            <td><span class="cust-phone">{{ row.regDate || '-' }}</span></td>
-            <td><span class="cust-phone">{{ row.actDate || '-' }}</span></td>
-            <td class="pkg-cell">{{ row.package }}</td>
-            <td>
-              <span class="badge" :class="row.status === 'ACTIVE' ? 'badge--green' : 'badge--gold'">
-                {{ row.status }}
-              </span>
-            </td>
-            <td class="agent-cell">{{ row.agent }}</td>
-            <td>
-              <span class="action-tag" :class="row.action === 'NEW_RECORD' ? 'action-tag--new' : 'action-tag--update'">
-                {{ row.action }}
-              </span>
-            </td>
-            <td>
-              <span class="log-tag" :class="row.logOk ? 'log-tag--ok' : 'log-tag--err'">
-                {{ row.log }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </th>
+              <th>Package</th>
+              <th>Status</th>
+              <th>Agent</th>
+              <th>Action</th>
+              <th>Log</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in paginatedRows" :key="row.id" class="record-row">
+              <td><span class="cust-id">{{ row.custId }}</span></td>
+              <td>
+                <div class="cust-name">{{ row.name }}</div>
+                <div class="cust-phone">{{ row.phone || '-' }}</div>
+                <div class="cust-phone" v-if="row.email" style="opacity: 0.7; font-size: 0.85em;">{{ row.email }}</div>
+              </td>
+              <td><span class="cust-phone">{{ row.regDate || '-' }}</span></td>
+              <td><span class="cust-phone">{{ row.actDate || '-' }}</span></td>
+              <td class="pkg-cell">{{ row.package }}</td>
+              <td>
+                <span class="badge" :class="row.status === 'ACTIVE' ? 'badge--green' : 'badge--gold'">
+                  {{ row.status }}
+                </span>
+              </td>
+              <td class="agent-cell">{{ row.agent }}</td>
+              <td>
+                <span class="action-tag" :class="row.action === 'NEW_RECORD' ? 'action-tag--new' : 'action-tag--update'">
+                  {{ row.action }}
+                </span>
+              </td>
+              <td>
+                <span class="log-tag" :class="row.logOk ? 'log-tag--ok' : 'log-tag--err'">
+                  {{ row.log }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Pagination -->
       <div class="table-footer">
@@ -741,4 +743,63 @@ watch([activeTab, filteredRows], () => {
 .ve-bar__fill { height: 100%; width: 65%; background: var(--green-ok); border-radius: 99px; animation: progress 2s ease-in-out infinite; }
 @keyframes progress { 0% { width: 40%; } 50% { width: 80%; } 100% { width: 40%; } }
 .ve-sub { font-size: 9px; color: var(--text-3); margin-top: 4px; }
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .kpi-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .bottom-row {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .table-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .toolbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .table-tabs {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .validation-engine {
+    display: none !important;
+  }
+}
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .page-actions {
+    width: 100%;
+  }
+  .page-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
+  .table-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+  }
+}
 </style>

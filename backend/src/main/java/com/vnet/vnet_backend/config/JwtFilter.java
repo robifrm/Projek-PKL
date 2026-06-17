@@ -30,13 +30,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
+                 && SecurityContextHolder.getContext().getAuthentication() == null) {
             String token = authHeader.substring(7);
             if (jwtProvider.validateToken(token)) {
-                String email = jwtProvider.getEmail(token);
+                String username = jwtProvider.getUsername(token);
 
-                userRepository.findByEmailIgnoreCase(email)
-                        .filter(user -> Boolean.TRUE.equals(user.getIsVerified()))
+                userRepository.findByUsernameIgnoreCase(username)
                         .ifPresent(user -> authenticate(user, request));
             }
         }
@@ -46,7 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private void authenticate(User user, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                user.getEmail(),
+                user.getUsername(),
                 null,
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );

@@ -29,7 +29,7 @@
       <!-- Sidebar Nav -->
       <div class="settings-nav card">
         <button
-          v-for="section in sections"
+          v-for="section in filteredSections"
           :key="section.key"
           class="snav-item"
           :class="{ 'snav-item--active': activeSection === section.key }"
@@ -49,21 +49,16 @@
         <div v-show="activeSection === 'profile'" class="settings-section card">
           <div class="section-title">Profile Information</div>
           <div class="section-sub">
-            Update your personal details and contact information.
+            Perbarui data profil Anda langsung ke database.
           </div>
 
           <div class="avatar-row">
-            <div class="avatar-big" v-if="profile.photo" :style="{ backgroundImage: `url(${profile.photo})`, backgroundSize: 'cover', backgroundPosition: 'center' }"></div>
-            <div class="avatar-big" v-else>{{ avatarInitials }}</div>
+            <div class="avatar-big">{{ avatarInitials }}</div>
             <div>
               <div class="avatar-name">{{ profile.name }}</div>
               <div class="avatar-role">
-                {{ profile.title }}<span v-if="profile.title && profile.company"> - </span>{{ profile.company }}
+                {{ profile.role }}
               </div>
-              <input type="file" ref="fileInput" style="display: none" accept="image/*" @change="handlePhotoUpload" />
-              <button class="btn-sm btn-sm--outline" style="margin-top: 8px" @click="$refs.fileInput.click()">
-                Change Photo
-              </button>
             </div>
           </div>
 
@@ -73,40 +68,24 @@
               <input
                 class="form-input"
                 v-model="profile.name"
-                placeholder="Admin User"
+                placeholder="Full Name"
               />
             </div>
             <div class="form-group">
-              <label class="form-label">Job Title</label>
+              <label class="form-label">Username</label>
               <input
                 class="form-input"
-                v-model="profile.title"
-                placeholder="System Architect"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Email Address</label>
-              <input
-                class="form-input"
-                v-model="profile.email"
-                type="email"
-                placeholder="admin@victorynetwork.id"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Phone</label>
-              <input
-                class="form-input"
-                v-model="profile.phone"
-                placeholder="+62 812 xxxx xxxx"
+                v-model="profile.username"
+                placeholder="Username"
               />
             </div>
             <div class="form-group" style="grid-column: 1/-1">
-              <label class="form-label">Company</label>
+              <label class="form-label">Role</label>
               <input
                 class="form-input"
-                v-model="profile.company"
-                placeholder="PT. Victory Network"
+                v-model="profile.role"
+                disabled
+                style="opacity: 0.7; cursor: not-allowed; background: var(--bg);"
               />
             </div>
           </div>
@@ -496,18 +475,16 @@
 
 <script setup>
 import { ref, computed, defineComponent, h, onMounted, watch } from "vue";
+import { updateProfile, changePassword as apiChangePassword, getSystemConfig, saveSystemConfig } from "@/services/api";
 
 const activeSection = ref("profile");
 const saved = ref(false);
 const isDark = ref(false);
 
 const profile = ref({
-  name: "Admin User",
-  title: "System Architect",
-  email: "admin@victorynetwork.id",
-  phone: "+62 812 0000 0000",
-  company: "PT. Victory Network",
-  photo: "",
+  name: "",
+  username: "",
+  role: "",
 });
 
 const systemConfig = ref({
@@ -662,6 +639,15 @@ const sections = [
   },
 ];
 
+const filteredSections = computed(() => {
+  return sections.filter(s => {
+    if (s.key === "system") {
+      return profile.value.role === "SUPER_ADMIN";
+    }
+    return true;
+  });
+});
+
 const notifications = ref([
   {
     key: "new_customer",
@@ -733,7 +719,7 @@ const channels = ref([
   { label: "Slack", enabled: false, icon: IconSlack },
 ]);
 
-onMounted(() => {
+onMounted(async () => {
   isDark.value = localStorage.getItem('vnet-theme') === 'dark';
   if (isDark.value) document.documentElement.classList.add('dark');
 
@@ -741,23 +727,39 @@ onMounted(() => {
   if (stored) {
     try {
       const u = JSON.parse(stored);
-      profile.value.name = u.nama || u.name || profile.value.name;
-      profile.value.email = u.email || profile.value.email;
-      profile.value.phone = u.phone || profile.value.phone;
-      profile.value.title = u.role || u.title || profile.value.title;
-      profile.value.photo = u.photo || "";
-      if (u.company) profile.value.company = u.company;
+      profile.value.name = u.nama || u.name || "";
+      profile.value.username = u.username || "";
+      profile.value.role = u.role || "";
     } catch (e) {
       console.error("Failed to parse stored user", e);
     }
   }
 
-  // Load other settings
-  const storedSystem = localStorage.getItem("vnet_system_config");
-  if (storedSystem) {
-    try {
-      systemConfig.value = { ...systemConfig.value, ...JSON.parse(storedSystem) };
-    } catch (e) {}
+  // Enforce activeSection check for non-SUPER_ADMIN
+  if (profile.value.role !== 'SUPER_ADMIN' && activeSection.value === 'system') {
+    activeSection.value = 'profile';
+  }
+
+  // Load system config from backend, fallback to localStorage
+  try {
+    const config = await getSystemConfig();
+    if (config) {
+      systemConfig.value = {
+        dbEndpoint: config.dbEndpoint || "",
+        syncInterval: config.syncInterval || 15,
+        maxImportBatch: config.maxImportBatch || 1200,
+        autoBackup: config.autoBackup === true || config.autoBackup === "true",
+        maintenanceMode: config.maintenanceMode === true || config.maintenanceMode === "true",
+      };
+    }
+  } catch (err) {
+    console.error("Gagal memuat konfigurasi sistem dari API, fallback ke localStorage", err);
+    const storedSystem = localStorage.getItem("vnet_system_config");
+    if (storedSystem) {
+      try {
+        systemConfig.value = { ...systemConfig.value, ...JSON.parse(storedSystem) };
+      } catch (e) {}
+    }
   }
 
   const storedNotifs = localStorage.getItem("vnet_notifications");
@@ -805,18 +807,7 @@ function toggleDark() {
   localStorage.setItem('vnet-theme', isDark.value ? 'dark' : 'light');
 }
 
-function handlePhotoUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    profile.value.photo = event.target.result;
-    saveAll();
-  };
-  reader.readAsDataURL(file);
-}
-
-function changePassword() {
+async function changePassword() {
   if (!passwordForm.value.currentPassword || !passwordForm.value.newPassword || !passwordForm.value.confirmPassword) {
     alert("Silakan isi semua kolom password.");
     return;
@@ -829,10 +820,18 @@ function changePassword() {
     alert("Konfirmasi password baru tidak sesuai.");
     return;
   }
-  alert("Password berhasil diperbarui!");
-  passwordForm.value.currentPassword = "";
-  passwordForm.value.newPassword = "";
-  passwordForm.value.confirmPassword = "";
+  try {
+    const res = await apiChangePassword({
+      currentPassword: passwordForm.value.currentPassword,
+      newPassword: passwordForm.value.newPassword,
+    });
+    alert(res.message || "Password berhasil diperbarui!");
+    passwordForm.value.currentPassword = "";
+    passwordForm.value.newPassword = "";
+    passwordForm.value.confirmPassword = "";
+  } catch (err) {
+    alert(err.message || "Gagal memperbarui password");
+  }
 }
 
 function toggle2FA() {
@@ -865,28 +864,43 @@ function revokeSession(device) {
   }
 }
 
-function saveAll() {
-  const stored = localStorage.getItem("vnet_user");
-  let u = {};
-  if (stored) {
+async function saveAll() {
+  if (activeSection.value === 'profile') {
     try {
-      u = JSON.parse(stored);
-    } catch (e) {}
+      const res = await updateProfile({
+        name: profile.value.name,
+        username: profile.value.username,
+      });
+      if (res.token) {
+        localStorage.setItem("vnet_token", res.token);
+      }
+      const u = {
+        id: res.user.id,
+        username: res.user.username,
+        nama: res.user.name,
+        role: res.user.role,
+      };
+      localStorage.setItem("vnet_user", JSON.stringify(u));
+      window.dispatchEvent(new CustomEvent("vnet-user-updated", { detail: u }));
+    } catch (err) {
+      alert(err.message || "Gagal memperbarui profil");
+      return;
+    }
   }
-  u.nama = profile.value.name;
-  u.email = profile.value.email;
-  u.phone = profile.value.phone;
-  u.role = profile.value.title;
-  u.company = profile.value.company;
-  u.photo = profile.value.photo;
 
-  localStorage.setItem("vnet_user", JSON.stringify(u));
+  if (activeSection.value === 'system') {
+    try {
+      await saveSystemConfig(systemConfig.value);
+    } catch (err) {
+      alert(err.message || "Gagal memperbarui konfigurasi sistem di database");
+      return;
+    }
+  }
+
   localStorage.setItem("vnet_system_config", JSON.stringify(systemConfig.value));
   localStorage.setItem("vnet_notifications", JSON.stringify(notifications.value));
   localStorage.setItem("vnet_notif_channels", JSON.stringify(channels.value));
   localStorage.setItem("vnet_display_preferences", JSON.stringify(displayPreferences.value));
-  
-  window.dispatchEvent(new CustomEvent("vnet-user-updated", { detail: u }));
 
   saved.value = true;
   setTimeout(() => {

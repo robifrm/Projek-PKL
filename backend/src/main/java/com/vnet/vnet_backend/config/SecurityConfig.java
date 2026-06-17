@@ -35,10 +35,9 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return email -> userRepository.findByEmailIgnoreCase(email)
-                .filter(user -> Boolean.TRUE.equals(user.getIsVerified()))
+        return username -> userRepository.findByUsernameIgnoreCase(username)
                 .map(user -> org.springframework.security.core.userdetails.User
-                        .withUsername(user.getEmail())
+                        .withUsername(user.getUsername())
                         .password(user.getPassword())
                         .authorities(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
                         .build())
@@ -73,6 +72,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/agents/performance").hasAnyRole("SUPER_ADMIN", "STAFF")
                 .requestMatchers("/api/agents/**").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/addresses/insights").hasAnyRole("SUPER_ADMIN", "STAFF")
+                .requestMatchers(HttpMethod.GET, "/api/system-config").hasAnyRole("SUPER_ADMIN", "STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/system-config").hasRole("SUPER_ADMIN")
+                .requestMatchers("/api/users/profile", "/api/users/change-password").hasAnyRole("SUPER_ADMIN", "STAFF")
                 .requestMatchers("/api/users/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/api/**").hasRole("SUPER_ADMIN")
                 .anyRequest().permitAll()
