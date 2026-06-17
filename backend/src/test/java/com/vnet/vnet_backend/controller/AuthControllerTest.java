@@ -59,10 +59,8 @@ class AuthControllerTest {
     // ─────────────────────────────────────────────
 
     @Test
-    @DisplayName("POST /api/auth/register — berhasil mengembalikan 201 CREATED")
-    void register_success_shouldReturn201() throws Exception {
-        when(authService.register(any())).thenReturn(msgResp("OTP dikirim", "user@vnet.id", false));
-
+    @DisplayName("POST /api/auth/register — mengembalikan 403 FORBIDDEN karena dinonaktifkan")
+    void register_disabled_shouldReturn403() throws Exception {
         Map<String, String> body = Map.of(
             "name", "Budi", "username", "budi123",
             "email", "user@vnet.id", "password", "pass123"
@@ -71,25 +69,8 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value("user@vnet.id"))
-                .andExpect(jsonPath("$.verified").value(false));
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/register — email duplikat mengembalikan 409 CONFLICT")
-    void register_duplicateEmail_shouldReturn409() throws Exception {
-        when(authService.register(any()))
-                .thenThrow(new ResponseStatusException(HttpStatus.CONFLICT, "Email sudah terdaftar"));
-
-        Map<String, String> body = Map.of(
-            "name", "A", "username", "a1", "email", "ada@vnet.id", "password", "pass123"
-        );
-
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Fitur registrasi dinonaktifkan"));
     }
 
     // ─────────────────────────────────────────────
@@ -102,7 +83,7 @@ class AuthControllerTest {
         AuthResponse authResp = AuthResponse.builder()
                 .id(1L).token("jwt.token.here")
                 .email("admin@vnet.id").name("Admin").username("admin")
-                .role(Role.ADMIN).isVerified(true).build();
+                .role(Role.SUPER_ADMIN).isVerified(true).build();
         when(authService.login(any())).thenReturn(authResp);
 
         Map<String, String> body = Map.of("email", "admin@vnet.id", "password", "pass123");
@@ -112,7 +93,7 @@ class AuthControllerTest {
                 .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("jwt.token.here"))
-                .andExpect(jsonPath("$.role").value("ADMIN"));
+                .andExpect(jsonPath("$.role").value("SUPER_ADMIN"));
     }
 
     @Test

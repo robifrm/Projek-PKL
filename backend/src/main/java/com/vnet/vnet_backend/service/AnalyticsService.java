@@ -408,7 +408,7 @@ public class AnalyticsService {
 
     private Map<String, Object> agentSummary(List<Map<String, Object>> rows, DateRange currentRange, DateRange previousRange) {
         long totalAgents = rows.size();
-        long activeAgents = rows.stream().filter(row -> "ACTIVE".equals(row.get("status"))).count();
+        long activeAgents = rows.stream().filter(row -> asLong(row.get("customers")) > 0).count();
         long totalCustomers = sumLong(rows, "customers");
         long totalActive = sumLong(rows, "active");
         double totalCommission = rows.stream()
@@ -445,6 +445,15 @@ public class AnalyticsService {
 
     private DateRange periodRange(String period, List<Customer> customers, int offset) {
         LocalDate anchor = anchorDate(customers);
+        if (period != null && period.matches("\\d{4}-\\d{2}")) {
+            try {
+                YearMonth targetMonth = YearMonth.parse(period).minusMonths(offset);
+                DateTimeFormatter labelFormat = DateTimeFormatter.ofPattern("MMM yyyy", Locale.forLanguageTag("id-ID"));
+                return new DateRange(targetMonth.atDay(1), targetMonth.atEndOfMonth(), targetMonth.format(labelFormat));
+            } catch (Exception e) {
+                // fallback
+            }
+        }
         String normalized = normalizePeriod(period);
         if ("all".equals(normalized)) {
             if (offset > 0) {
@@ -473,6 +482,9 @@ public class AnalyticsService {
     }
 
     private String normalizePeriod(String period) {
+        if (period != null && period.matches("\\d{4}-\\d{2}")) {
+            return period;
+        }
         if ("all".equalsIgnoreCase(period)) {
             return "all";
         }

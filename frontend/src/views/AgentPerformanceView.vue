@@ -10,8 +10,8 @@
       </div>
       <div class="page-actions">
         <div class="period-select">
-          <select v-model="period" @change="fetchData">
-            <option value="month">This Month</option>
+          <select v-model="periodType" @change="fetchData">
+            <option value="month">Specific Month</option>
             <option value="quarter">This Quarter</option>
             <option value="year">This Year</option>
             <option value="all">All Time</option>
@@ -19,6 +19,16 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <polyline points="6 9 12 15 18 9" />
           </svg>
+        </div>
+
+        <div class="period-select" v-if="periodType === 'month'">
+          <input
+            type="month"
+            v-model="selectedMonth"
+            @change="fetchData"
+            class="form-input"
+            style="padding: 8px 12px; height: auto"
+          />
         </div>
 
         <button class="btn btn--primary" @click="addAgent">
@@ -66,23 +76,28 @@
       <div class="card kpi-card kpi-card--dark">
         <div class="kpi-top">
           <span class="kpi-label" style="color: rgba(255, 255, 255, 0.7)">Top Performer</span>
-          <span class="badge badge--gold" style="font-size: 9px; padding: 3px 6px;">GOLD</span>
+          <span v-if="topPerformer.customers > 0" class="badge badge--gold" style="font-size: 9px; padding: 3px 6px;">GOLD</span>
         </div>
-        <div class="top-performer">
-          <div class="logo-avatar top-performer__logo" :class="{ 'logo-avatar--image': hasLogo(topPerformer) }" :style="{ background: hasLogo(topPerformer) ? '#fff' : topPerformer.color }">
-            <img v-if="hasLogo(topPerformer)" :src="topPerformer.logo" :alt="`${topPerformer.name} logo`" @error="markLogoBroken(topPerformer.logo)" />
-            <span v-else>{{ topPerformer.initials }}</span>
+        <div v-if="topPerformer.customers > 0" style="display: flex; flex-direction: column; height: 100%; gap: 12px; margin-top: auto;">
+          <div class="top-performer">
+            <div class="logo-avatar top-performer__logo" :class="{ 'logo-avatar--image': hasLogo(topPerformer) }" :style="{ background: hasLogo(topPerformer) ? '#fff' : topPerformer.color }">
+              <img v-if="hasLogo(topPerformer)" :src="topPerformer.logo" :alt="`${topPerformer.name} logo`" @error="markLogoBroken(topPerformer.logo)" />
+              <span v-else>{{ topPerformer.initials }}</span>
+            </div>
+            <div class="top-performer__meta">
+              <div class="top-performer__name" :title="topPerformer.name">{{ topPerformer.name }}</div>
+              <div class="top-performer__type">{{ topPerformer.type }}</div>
+            </div>
           </div>
-          <div class="top-performer__meta">
-            <div class="top-performer__name" :title="topPerformer.name">{{ topPerformer.name }}</div>
-            <div class="top-performer__type">{{ topPerformer.type }}</div>
+          <div class="kpi-meta" style="margin-top: auto">
+            <span class="badge-inline badge-inline--gold">{{ topPerformer.customers }} customers</span>
+          </div>
+          <div class="success-rate">
+            Rp {{ topPerformer.commission }} estimated
           </div>
         </div>
-        <div class="kpi-meta" style="margin-top: auto">
-          <span class="badge-inline badge-inline--gold">{{ topPerformer.customers }} customers</span>
-        </div>
-        <div class="success-rate">
-          Rp {{ topPerformer.commission }} estimated
+        <div v-else class="chart-empty-state" style="padding: 10px; color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: auto; margin-bottom: auto; flex: 1; display: flex; align-items: center; justify-content: center; text-align: center;">
+          <span>Belum ada pencapaian agen pada periode ini.</span>
         </div>
       </div>
 
@@ -374,11 +389,13 @@
                       <circle cx="5" cy="12" r="1"></circle>
                     </svg>
                   </button>
-                  <div class="action-dropdown" :class="{'action-dropdown--up': idx >= filteredTableAgents.length - 3 && filteredTableAgents.length > 3}" v-if="activeActionMenu === a.name">
-                    <button class="action-dropdown-item" @click="editAgent(a)">Edit Details</button>
-                    <button class="action-dropdown-item" @click="suspendAgent(a)">{{ a.status === 'SUSPENDED' ? 'Activate Agent' : 'Suspend Agent' }}</button>
-                    <button class="action-dropdown-item action-dropdown-item--danger" @click="deleteAgent(a)">Remove</button>
-                  </div>
+                  <Transition name="dropdown">
+                    <div class="action-dropdown" :class="{'action-dropdown--up': idx >= filteredTableAgents.length - 3 && filteredTableAgents.length > 3}" v-if="activeActionMenu === a.name">
+                      <button class="action-dropdown-item" @click="editAgent(a)">Edit Details</button>
+                      <button class="action-dropdown-item" @click="suspendAgent(a)">{{ a.status === 'SUSPENDED' ? 'Activate Agent' : 'Suspend Agent' }}</button>
+                      <button class="action-dropdown-item action-dropdown-item--danger" @click="deleteAgent(a)">Remove</button>
+                    </div>
+                  </Transition>
                 </div>
               </td>
             </tr>
@@ -440,6 +457,34 @@
         </div>
       </div>
     </div>
+
+    <!-- Custom Confirm Modal -->
+    <div class="modal-backdrop" v-if="showConfirmModal" @click.self="showConfirmModal = false" style="z-index: 110;">
+      <div class="modal-card card" style="max-width: 400px; border-top: 4px solid var(--red-warn);">
+        <div class="modal-header" style="padding: 18px 20px 10px 20px; border-bottom: none;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 30px; height: 30px; border-radius: 50%; background: rgba(231, 76, 60, 0.1); color: var(--red-warn); display: flex; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <h2 class="chart-title" style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text-1);">Hapus Agen</h2>
+          </div>
+          <button class="btn-icon" @click="showConfirmModal = false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body" style="padding: 10px 20px 20px 20px; font-size: 13px; color: var(--text-2); line-height: 1.5;">
+          Apakah Anda yakin ingin menghapus agen <strong>{{ selectedAgentForDelete?.name }}</strong>? Tindakan ini tidak dapat dibatalkan.
+        </div>
+        <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid var(--border);">
+          <button class="btn btn--ghost" @click="showConfirmModal = false" style="padding: 8px 16px;">Batal</button>
+          <button class="btn btn--primary" @click="executeConfirmDelete" style="padding: 8px 16px; background: var(--red-warn); color: #fff; border: none; box-shadow: none;">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -465,7 +510,11 @@ const agentColors = computed(() => {
     ? ['#38BDF8', '#06B6D4', '#8B5CF6', '#F5A623', '#E91E8C', '#27AE60', '#6B9EF5', '#E74C3C']
     : ['#1A2170', '#00B4A6', '#8B5CF6', '#F5A623', '#E91E8C', '#27AE60', '#6B9EF5', '#E74C3C'];
 });
-const period = ref("month");
+const periodType = ref("month");
+const selectedMonth = ref(new Date().toISOString().slice(0, 7)); // e.g. "2026-06"
+const period = computed(() => {
+  return periodType.value === "month" ? selectedMonth.value : periodType.value;
+});
 const agentSearchQuery = ref("");
 const activeTableTab = ref("all");
 const chartTab = ref("customers");
@@ -499,6 +548,8 @@ if (typeof window !== "undefined") {
 
 // Modal State
 const isAddModalOpen = ref(false);
+const showConfirmModal = ref(false);
+const selectedAgentForDelete = ref(null);
 const modalMode = ref('add');
 const activeEditOriginalName = ref(null);
 const newAgentForm = ref({
@@ -736,17 +787,23 @@ async function suspendAgent(agent) {
   }
 }
 
-async function deleteAgent(agent) {
-  if (confirm(`Apakah Anda yakin ingin menghapus agen "${agent.name}"?`)) {
-    try {
-      loading.value = true;
-      await deleteAgentRecord(agent.id);
-      await loadAgents();
-    } catch (err) {
-      console.error("Gagal menghapus agen:", err);
-    } finally {
-      loading.value = false;
-    }
+function deleteAgent(agent) {
+  selectedAgentForDelete.value = agent;
+  showConfirmModal.value = true;
+}
+
+async function executeConfirmDelete() {
+  if (!selectedAgentForDelete.value) return;
+  try {
+    loading.value = true;
+    await deleteAgentRecord(selectedAgentForDelete.value.id);
+    showConfirmModal.value = false;
+    selectedAgentForDelete.value = null;
+    await loadAgents();
+  } catch (err) {
+    console.error("Gagal menghapus agen:", err);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -755,9 +812,15 @@ const handleTopbarSearch = (e) => { agentSearchQuery.value = e.detail || ''; };
 const totalAgents = computed(() => performanceSummary.value.totalAgents);
 const activeAgentCount = computed(() => performanceSummary.value.activeAgents);
 const periodLabel = computed(() => {
-  if (period.value === 'month') return 'Bulan Ini';
-  if (period.value === 'quarter') return 'Kuartal Ini';
-  if (period.value === 'year') return 'Tahun Ini';
+  if (periodType.value === 'month') {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    if (selectedMonth.value === currentMonth) {
+      return 'Bulan Ini';
+    }
+    return performanceSummary.value.periodLabel || 'Bulan Ini';
+  }
+  if (periodType.value === 'quarter') return 'Kuartal Ini';
+  if (periodType.value === 'year') return 'Tahun Ini';
   return 'Semua Waktu';
 });
 const avgPerAgent = computed(() => performanceSummary.value.avgPerAgent);
@@ -787,8 +850,9 @@ const loadAgents = async () => {
     agentDetails.value = list;
     tableAgents.value = list;
     
-    performanceSummary.value.totalAgents = data?.totalAgents || 0;
-    performanceSummary.value.activeAgents = data?.activeAgentCount || 0;
+    if (data?.summary) {
+      performanceSummary.value = data.summary;
+    }
   } catch (error) {
     console.warn("Failed to load agent performance", error);
   } finally {
@@ -1815,20 +1879,22 @@ onUnmounted(() => {
   position: absolute;
   right: 0;
   top: calc(100% + 4px);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-lg);
   min-width: 140px;
   z-index: 50;
   display: flex;
   flex-direction: column;
-  padding: 4px;
-  animation: dropIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 6px;
+  gap: 2px;
+  transform-origin: top right;
 }
-@keyframes dropIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+.action-dropdown--up {
+  top: auto;
+  bottom: calc(100% + 4px);
+  transform-origin: bottom right;
 }
 .action-dropdown-item {
   background: none;
@@ -1837,19 +1903,34 @@ onUnmounted(() => {
   text-align: left;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-1);
+  color: var(--text-2);
   border-radius: 4px;
   cursor: pointer;
   font-family: var(--font-body);
+  transition: all var(--transition-fast, 0.15s);
 }
 .action-dropdown-item:hover {
   background: var(--bg);
+  color: var(--text-1);
 }
 .action-dropdown-item--danger {
   color: var(--red-warn);
 }
 .action-dropdown-item--danger:hover {
-  background: #fdeceb;
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--red-warn);
+}
+
+/* Dropdown Animation using Vue Transition */
+.dropdown-enter-active, .dropdown-leave-active {
+  transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-enter-from, .dropdown-leave-to {
+  opacity: 0;
+  transform: scale(0.95) translateY(-8px);
+}
+.action-dropdown--up.dropdown-enter-from, .action-dropdown--up.dropdown-leave-to {
+  transform: scale(0.95) translateY(8px);
 }
 
 @media (max-width: 1024px) {

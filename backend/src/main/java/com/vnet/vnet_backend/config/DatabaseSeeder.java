@@ -44,9 +44,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             User admin = User.builder()
                     .name(seedAdminName)
+                    .username("admin")
                     .email(seedAdminEmail)
                     .password(passwordEncoder.encode(seedAdminPassword))
-                    .role(Role.ADMIN)
+                    .role(Role.SUPER_ADMIN)
                     .isVerified(true)
                     .build();
             userRepository.save(admin);

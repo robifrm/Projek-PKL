@@ -255,9 +255,8 @@ const goToNotification = (item) => {
 };
 
 const logout = () => {
-  localStorage.removeItem("vnet_token");
-  localStorage.removeItem("vnet_user");
-  router.push("/login");
+  showProfile.value = false;
+  window.dispatchEvent(new CustomEvent('request-logout'));
 };
 
 async function loadNotifications() {

@@ -41,7 +41,7 @@ class UserRepositoryTest {
                 .username("budi123")
                 .email("budi@vnet.id")
                 .password("$2a$10$hashedPasswordHere")
-                .role(Role.NOC)
+                .role(Role.STAFF)
                 .isVerified(true)
                 .build();
 
@@ -147,7 +147,7 @@ class UserRepositoryTest {
                 .username("siti456")
                 .email("siti@vnet.id")
                 .password("hashed")
-                .role(Role.FINANCE)
+                .role(Role.STAFF)
                 .isVerified(false)
                 .build();
         userRepository.save(second);

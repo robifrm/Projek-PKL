@@ -40,7 +40,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthMessageResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fitur registrasi dinonaktifkan");
     }
 
     @PostMapping("/verify-otp")
@@ -65,37 +65,12 @@ public class AuthController {
 
     @PostMapping("/register-init")
     public ResponseEntity<Map<String, Object>> registerInit(@RequestBody Map<String, Object> payload) {
-        validateCaptchaIfPresent(payload);
-
-        RegisterRequest request = new RegisterRequest();
-        request.setName(firstText(payload, "name", "nama"));
-        request.setUsername(firstText(payload, "username"));
-        request.setEmail(firstText(payload, "email"));
-        request.setPhone(firstText(payload, "phone", "noTelp", "noTelpon"));
-        request.setPassword(firstText(payload, "password"));
-
-        String roleStr = firstText(payload, "role");
-        if (roleStr != null) {
-            try {
-                request.setRole(com.vnet.vnet_backend.enums.Role.valueOf(roleStr.toUpperCase(java.util.Locale.ROOT)));
-            } catch (IllegalArgumentException e) {
-                // ignore
-            }
-        }
-
-        AuthMessageResponse response = authService.register(request);
-        Map<String, Object> body = responseBody(response);
-        body.put("sessionId", response.getEmail());
-        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fitur registrasi dinonaktifkan");
     }
 
     @PostMapping("/register-confirm")
     public ResponseEntity<Map<String, Object>> registerConfirm(@RequestBody Map<String, Object> payload) {
-        VerifyOtpRequest request = new VerifyOtpRequest();
-        request.setEmail(firstText(payload, "email", "sessionId"));
-        request.setOtpCode(firstText(payload, "otpCode", "otp"));
-
-        return ResponseEntity.ok(responseBody(authService.verifyOtp(request)));
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fitur registrasi dinonaktifkan");
     }
 
     @PostMapping("/resend-otp")

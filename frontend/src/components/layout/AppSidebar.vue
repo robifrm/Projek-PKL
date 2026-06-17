@@ -106,11 +106,7 @@ const userInitials = computed(() => {
 });
 
 function logout() {
-  if (confirm("Apakah Anda yakin ingin keluar dari sistem?")) {
-    localStorage.removeItem("vnet_token");
-    localStorage.removeItem("vnet_user");
-    window.location.href = "/login";
-  }
+  window.dispatchEvent(new CustomEvent('request-logout'));
 }
 
 const logoSrc = ref("/brand/vnet-logo.png");

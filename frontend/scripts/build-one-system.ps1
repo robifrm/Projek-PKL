@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $dashboardRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$backendRoot = Resolve-Path (Join-Path $dashboardRoot "..\vnet-backend")
+$backendRoot = Resolve-Path (Join-Path $dashboardRoot "..\backend")
 $staticRoot = Join-Path $backendRoot "src\main\resources\static"
 
 Write-Host "Building Vue dashboard..."

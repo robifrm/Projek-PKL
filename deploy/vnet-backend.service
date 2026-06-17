@@ -1,0 +1,41 @@
+[Unit]
+Description=VNet Backend - Spring Boot Application
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/vnet/backend
+
+# Environment Variables - Database
+Environment="DB_USERNAME=vnetuser"
+Environment="DB_PASSWORD=VNet@DB2026!"
+
+# Environment Variables - JWT (GANTI SEBELUM PRODUCTION!)
+Environment="JWT_SECRET=vnet_production_secret_key_ganti_ini_sebelum_production_2026"
+Environment="JWT_EXPIRATION_MS=86400000"
+
+# Environment Variables - Resend Email
+Environment="RESEND_API_KEY=re_YStab1af_PUR9isWWgJDSS7x8hfJ5UQF3"
+Environment="RESEND_FROM_EMAIL=VNet <info.vnetsukabumi.id>"
+
+# Environment Variables - Admin Seed
+Environment="SEED_ADMIN_ENABLED=true"
+Environment="SEED_ADMIN_NAME=Super Admin VNet"
+Environment="SEED_ADMIN_EMAIL=admin@victory.net.id"
+Environment="SEED_ADMIN_PASSWORD=Sukabumi2026"
+
+# Jalankan aplikasi
+ExecStart=/usr/bin/java -jar /var/www/vnet/backend/vnet-backend-0.0.1-SNAPSHOT.jar
+
+# Restart otomatis kalau crash
+Restart=always
+RestartSec=10
+
+# Log output
+StandardOutput=append:/var/www/vnet/logs/backend.log
+StandardError=append:/var/www/vnet/logs/backend-error.log
+
+[Install]
+WantedBy=multi-user.target

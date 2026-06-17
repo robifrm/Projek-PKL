@@ -13,9 +13,7 @@ const routes = [
   },
   {
     path: "/signup",
-    name: "signup",
-    component: SignupView,
-    meta: { hideLayout: true, guestOnly: true }
+    redirect: "/login"
   },
   { 
     path: "/dashboard", 

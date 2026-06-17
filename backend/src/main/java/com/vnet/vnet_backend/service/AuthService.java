@@ -252,7 +252,7 @@ public class AuthService {
         if (request.getRole() != null) {
             return request.getRole();
         }
-        return userRepository.count() == 0 ? Role.ADMIN : Role.NOC;
+        return userRepository.count() == 0 ? Role.SUPER_ADMIN : Role.STAFF;
     }
 
     /**

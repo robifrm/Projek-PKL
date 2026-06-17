@@ -44,21 +44,18 @@ class SecurityEndpointTest {
     @Autowired private PasswordEncoder passwordEncoder;
 
     private String adminToken;
-    private String nocToken;
-    private String financeToken;
+    private String staffToken;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
 
         // Save users to DB so JwtFilter can load them
-        saveUser("admin@test.id", "admin", Role.ADMIN);
-        saveUser("noc@test.id", "noc", Role.NOC);
-        saveUser("finance@test.id", "finance", Role.FINANCE);
+        saveUser("admin@test.id", "admin", Role.SUPER_ADMIN);
+        saveUser("staff@test.id", "staff", Role.STAFF);
 
-        adminToken   = generateTokenFor(Role.ADMIN,   "admin@test.id");
-        nocToken     = generateTokenFor(Role.NOC,     "noc@test.id");
-        financeToken = generateTokenFor(Role.FINANCE, "finance@test.id");
+        adminToken   = generateTokenFor(Role.SUPER_ADMIN,   "admin@test.id");
+        staffToken   = generateTokenFor(Role.STAFF,         "staff@test.id");
     }
 
     private void saveUser(String email, String username, Role role) {
@@ -167,7 +164,7 @@ class SecurityEndpointTest {
         org.springframework.test.util.ReflectionTestUtils.setField(shortLived, "tokenValidityInMilliseconds", -1000L);
 
         User u = new User();
-        u.setId(1L); u.setEmail("x@x.id"); u.setRole(Role.ADMIN); u.setIsVerified(true);
+        u.setId(1L); u.setEmail("x@x.id"); u.setRole(Role.SUPER_ADMIN); u.setIsVerified(true);
         u.setUsername("x"); u.setName("X"); u.setPassword("h");
         String expiredToken = shortLived.generateToken(u);
 
@@ -181,28 +178,18 @@ class SecurityEndpointTest {
     // ═══════════════════════════════════════════════
 
     @Test
-    @DisplayName("SEC-10: NOC tidak boleh mengakses DELETE /api/customers — harus 403")
-    void deleteCustomer_asNoc_shouldReturn403() throws Exception {
+    @DisplayName("SEC-10: STAFF tidak boleh mengakses DELETE /api/customers — harus 403")
+    void deleteCustomer_asStaff_shouldReturn403() throws Exception {
         mockMvc.perform(delete("/api/customers/1")
-                .header("Authorization", "Bearer " + nocToken))
+                .header("Authorization", "Bearer " + staffToken))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("SEC-11: FINANCE tidak boleh POST /api/customers — harus 403")
-    void createCustomer_asFinance_shouldReturn403() throws Exception {
-        mockMvc.perform(post("/api/customers")
-                .header("Authorization", "Bearer " + financeToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"custId\":\"C999\",\"nama\":\"Test\"}"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("SEC-12: FINANCE tidak boleh akses /api/agents — harus 403")
-    void agents_asFinance_shouldReturn403() throws Exception {
+    @DisplayName("SEC-12: STAFF tidak boleh akses /api/agents — harus 403")
+    void agents_asStaff_shouldReturn403() throws Exception {
         mockMvc.perform(get("/api/agents")
-                .header("Authorization", "Bearer " + financeToken))
+                .header("Authorization", "Bearer " + staffToken))
                 .andExpect(status().isForbidden());
     }
 

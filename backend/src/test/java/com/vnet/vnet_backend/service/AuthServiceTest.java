@@ -141,7 +141,7 @@ class AuthServiceTest {
         user.setEmail("admin@vnet.id");
         user.setName("Admin");
         user.setUsername("admin");
-        user.setRole(Role.ADMIN);
+        user.setRole(Role.SUPER_ADMIN);
         user.setIsVerified(true);
         user.setPassword(passwordEncoder.encode("rahasia123"));
 
@@ -155,7 +155,7 @@ class AuthServiceTest {
 
         assertThat(resp.getToken()).isNotBlank();
         assertThat(resp.getEmail()).isEqualTo("admin@vnet.id");
-        assertThat(resp.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(resp.getRole()).isEqualTo(Role.SUPER_ADMIN);
     }
 
     @Test
@@ -165,7 +165,7 @@ class AuthServiceTest {
         user.setEmail("user@vnet.id");
         user.setIsVerified(true);
         user.setPassword(passwordEncoder.encode("benar"));
-        user.setRole(Role.NOC);
+        user.setRole(Role.STAFF);
         when(userRepository.findByEmailIgnoreCase("user@vnet.id")).thenReturn(Optional.of(user));
 
         LoginRequest req = new LoginRequest();
@@ -185,7 +185,7 @@ class AuthServiceTest {
         user.setEmail("new@vnet.id");
         user.setIsVerified(false);
         user.setPassword(passwordEncoder.encode("pass123"));
-        user.setRole(Role.NOC);
+        user.setRole(Role.STAFF);
         when(userRepository.findByEmailIgnoreCase("new@vnet.id")).thenReturn(Optional.of(user));
 
         LoginRequest req = new LoginRequest();
@@ -223,7 +223,7 @@ class AuthServiceTest {
         User user = new User();
         user.setEmail("pending@vnet.id");
         user.setIsVerified(false);
-        user.setRole(Role.NOC);
+        user.setRole(Role.STAFF);
         when(userRepository.findByEmailIgnoreCase("pending@vnet.id")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -243,7 +243,7 @@ class AuthServiceTest {
         User user = new User();
         user.setEmail("user@vnet.id");
         user.setIsVerified(false);
-        user.setRole(Role.NOC);
+        user.setRole(Role.STAFF);
         // Set OTP tidak cocok (assign otp 111111 tetapi kirim 999999)
         ReflectionTestUtils.setField(otpService, "expirationMinutes", 5L);
         otpService.assignOtp(user, "111111");
@@ -269,7 +269,7 @@ class AuthServiceTest {
         User user = new User();
         user.setEmail("reset@vnet.id");
         user.setIsVerified(true);
-        user.setRole(Role.NOC);
+        user.setRole(Role.STAFF);
         user.setPassword(passwordEncoder.encode("oldPass123"));
         when(userRepository.findByEmailIgnoreCase("reset@vnet.id")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -292,7 +292,7 @@ class AuthServiceTest {
         User user = new User();
         user.setEmail("u@v.id");
         user.setIsVerified(true);
-        user.setRole(Role.NOC);
+        user.setRole(Role.STAFF);
         when(userRepository.findByEmailIgnoreCase("u@v.id")).thenReturn(Optional.of(user));
 
         ResetPasswordRequest req = new ResetPasswordRequest();

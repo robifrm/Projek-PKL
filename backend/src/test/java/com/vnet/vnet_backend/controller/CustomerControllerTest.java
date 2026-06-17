@@ -60,7 +60,7 @@ class CustomerControllerTest {
                 .username("admin")
                 .email("admin@test.com")
                 .password(passwordEncoder.encode("pass"))
-                .role(Role.ADMIN)
+                .role(Role.SUPER_ADMIN)
                 .isVerified(true)
                 .build();
         userRepository.save(admin);
