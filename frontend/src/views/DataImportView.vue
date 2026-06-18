@@ -183,11 +183,14 @@
             </div>
           </div>
 
-          <button class="btn-template">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <button class="btn-template" @click="downloadTemplate" :disabled="loadingTemplate">
+            <svg v-if="loadingTemplate" class="btn-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <circle cx="12" cy="12" r="10" stroke-dasharray="40" stroke-dashoffset="10"/>
+            </svg>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
             </svg>
-            Download Template
+            {{ loadingTemplate ? 'Downloading...' : 'Download Template' }}
           </button>
         </div>
 
@@ -211,7 +214,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getImportStats, previewImport } from '@/services/api'
+import { getImportStats, previewImport, downloadImportTemplate } from '@/services/api'
 
 const router = useRouter()
 const isDragging  = ref(false)
@@ -220,6 +223,7 @@ const uploadedFile = ref(null)
 const isProcessing = ref(false)
 const syncDone    = ref(false)
 const importError = ref('')
+const loadingTemplate = ref(false)
 const importStats = ref({
   lastActivityLabel: 'Belum ada import',
   lastActivityDetail: 'Upload Excel untuk mulai sinkronisasi data',
@@ -303,6 +307,27 @@ async function processData() {
     importError.value = error.message || 'Gagal memproses file import.'
   } finally {
     isProcessing.value = false
+  }
+}
+
+async function downloadTemplate() {
+  if (loadingTemplate.value) return
+  loadingTemplate.value = true
+  importError.value = ''
+  try {
+    const blob = await downloadImportTemplate()
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'template_import_pelanggan.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    importError.value = error.message || 'Gagal mengunduh template.'
+  } finally {
+    loadingTemplate.value = false
   }
 }
 
@@ -610,5 +635,18 @@ onMounted(loadImportStats)
     padding: 14px;
     font-size: 13px;
   }
+}
+
+/* Spinner inside button */
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--text-2);
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

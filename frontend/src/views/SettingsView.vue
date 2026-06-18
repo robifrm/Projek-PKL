@@ -474,6 +474,36 @@
       </div>
     </div>
   </div>
+
+  <!-- Revoke Session Confirm Modal -->
+  <Teleport to="body">
+    <div class="revoke-modal-backdrop" v-if="showRevokeModal" @click.self="cancelRevoke">
+      <div class="revoke-modal-card">
+        <div class="revoke-modal-icon-wrap">
+          <div class="revoke-modal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="revoke-modal-body">
+          <div class="revoke-modal-title">Keluarkan Sesi</div>
+          <div class="revoke-modal-desc">
+            Anda akan mengeluarkan sesi aktif di
+            <strong>{{ revokeTarget?.device }}</strong>.
+            Perangkat tersebut akan logout otomatis.
+          </div>
+        </div>
+        <div class="revoke-modal-footer">
+          <button class="btn-sm btn-sm--ghost" @click="cancelRevoke">Batal</button>
+          <button class="btn-sm btn-sm--danger" @click="confirmRevoke" :disabled="loadingRevoke">
+            {{ loadingRevoke ? 'Memproses...' : 'Ya, Keluarkan' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -510,6 +540,9 @@ const tfaCode = ref("");
 const tfaError = ref("");
 
 const sessions = ref([]);
+const showRevokeModal = ref(false);
+const revokeTarget = ref(null);
+const loadingRevoke = ref(false);
 
 const displayPreferences = ref({
   language: "Bahasa Indonesia",
@@ -869,16 +902,29 @@ async function loadSessions() {
   }
 }
 
-async function revokeSession(session) {
-  if (confirm(`Apakah Anda yakin ingin mengeluarkan sesi di ${session.device}?`)) {
-    try {
-      await apiRevokeSession(session.id);
-      sessions.value = sessions.value.filter(s => s.id !== session.id);
-      alert(`Sesi untuk ${session.device} berhasil dikeluarkan.`);
-    } catch (err) {
-      alert("Gagal mengeluarkan sesi: " + err.message);
-    }
+function revokeSession(session) {
+  revokeTarget.value = session;
+  showRevokeModal.value = true;
+}
+
+async function confirmRevoke() {
+  if (!revokeTarget.value) return;
+  loadingRevoke.value = true;
+  try {
+    await apiRevokeSession(revokeTarget.value.id);
+    sessions.value = sessions.value.filter(s => s.id !== revokeTarget.value.id);
+    showRevokeModal.value = false;
+  } catch (err) {
+    console.error("Gagal mengeluarkan sesi:", err.message);
+  } finally {
+    loadingRevoke.value = false;
+    revokeTarget.value = null;
   }
+}
+
+function cancelRevoke() {
+  showRevokeModal.value = false;
+  revokeTarget.value = null;
 }
 
 async function saveAll() {
@@ -1443,6 +1489,93 @@ async function saveAll() {
   color: var(--green-ok);
   padding: 2px 7px;
   border-radius: 99px;
+}
+
+/* Revoke Session Modal */
+.revoke-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.15s ease-out;
+}
+.revoke-modal-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--card-bg, #fff);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  overflow: hidden;
+  text-align: center;
+  animation: popIn 0.2s ease-out;
+}
+.revoke-modal-icon-wrap {
+  padding: 28px 20px 14px;
+  display: flex;
+  justify-content: center;
+}
+.revoke-modal-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #FFF7ED;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f97316;
+}
+.revoke-modal-body {
+  padding: 0 24px 20px;
+}
+.revoke-modal-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 7px;
+}
+.revoke-modal-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+.revoke-modal-desc strong {
+  color: var(--text-1);
+}
+.revoke-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-sm--ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-sm--ghost:hover {
+  background: var(--border);
+  color: var(--text-1);
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes popIn {
+  from { transform: scale(0.94); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .display-grid {

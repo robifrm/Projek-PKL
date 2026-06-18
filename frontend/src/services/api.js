@@ -168,6 +168,25 @@ export function confirmImport(payload) {
   });
 }
 
+export async function downloadImportTemplate() {
+  const token = localStorage.getItem("vnet_token");
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+  const headers = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/import/template`, {
+    headers,
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to download template: ${response.status}`);
+  }
+  
+  return response.blob();
+}
+
 export function createCustomer(customer) {
   return apiFetch("/customers", {
     method: "POST",

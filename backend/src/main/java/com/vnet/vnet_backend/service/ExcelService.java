@@ -86,4 +86,68 @@ public class ExcelService {
 
         return result;
     }
+
+    public byte[] generateTemplate() {
+        try (
+                Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+                java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream()
+        ) {
+            Sheet sheet = workbook.createSheet("Template Import");
+            
+            // Header Style
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font font = workbook.createFont();
+            font.setBold(true);
+            headerStyle.setFont(font);
+            
+            // Headers
+            String[] headers = {
+                "No", "Tanggal Registrasi", "Agent", "Nama", "Alamat", 
+                "RT/RW", "Kelurahan / Desa", "Kecamatan", "Kota/Kabupaten", 
+                "Kode Pos", "Nomor Telepon", "Email", "Package", "Status", 
+                "Tanggal Aktivasi", "Cust ID", "Price", "Profit",
+                "Biaya Pasang", "Isolir"
+            };
+            
+            Row headerRow = sheet.createRow(0);
+            for (int j = 0; j < headers.length; j++) {
+                Cell cell = headerRow.createCell(j);
+                cell.setCellValue(headers[j]);
+                cell.setCellStyle(headerStyle);
+            }
+            
+            // Add a sample row
+            Row sampleRow = sheet.createRow(1);
+            sampleRow.createCell(0).setCellValue("1");
+            sampleRow.createCell(1).setCellValue("17/06/2026");
+            sampleRow.createCell(2).setCellValue("Pt. Zanara");
+            sampleRow.createCell(3).setCellValue("Robi");
+            sampleRow.createCell(4).setCellValue("Jl. Sudirman No. 10");
+            sampleRow.createCell(5).setCellValue("01/02");
+            sampleRow.createCell(6).setCellValue("Cikole");
+            sampleRow.createCell(7).setCellValue("Cikole");
+            sampleRow.createCell(8).setCellValue("Sukabumi");
+            sampleRow.createCell(9).setCellValue("43110");
+            sampleRow.createCell(10).setCellValue("081234567890");
+            sampleRow.createCell(11).setCellValue("robi@gmail.com");
+            sampleRow.createCell(12).setCellValue("100 Mbps");
+            sampleRow.createCell(13).setCellValue("Active");
+            sampleRow.createCell(14).setCellValue("17/06/2026");
+            sampleRow.createCell(15).setCellValue("VN12345");
+            sampleRow.createCell(16).setCellValue(500000.0);
+            sampleRow.createCell(17).setCellValue(150000.0);
+            sampleRow.createCell(18).setCellValue(200000.0);
+            sampleRow.createCell(19).setCellValue(false);
+
+            // Auto-size columns
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+            
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Gagal generate template Excel: " + e.getMessage(), e);
+        }
+    }
 }

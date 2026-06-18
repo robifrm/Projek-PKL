@@ -99,6 +99,16 @@ public class ImportController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/template")
+    public ResponseEntity<byte[]> downloadTemplate() {
+        byte[] data = excelService.generateTemplate();
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDispositionFormData("attachment", "template_import_pelanggan.xlsx");
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
         Map<String, Object> body = new LinkedHashMap<>();

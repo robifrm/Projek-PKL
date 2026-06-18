@@ -24,6 +24,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     long countByAgentId(Long agentId);
 
+    boolean existsByPkgId(Long pkgId);
+
     /**
      * Fetch all customers with their relations (pkg, address, agent) in ONE query.
      * This eliminates the N+1 problem where each lazy relation triggered separate SQL.

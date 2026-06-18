@@ -239,6 +239,38 @@
           </form>
         </div>
       </div>
+      <!-- Delete Confirm Modal -->
+      <div class="compact-modal-backdrop" v-if="showDeleteModal" @click.self="cancelDelete">
+        <div class="compact-modal-card delete-modal-card">
+          <div class="delete-modal-icon-wrap">
+            <div class="delete-modal-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                <path d="M10 11v6M14 11v6" />
+                <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+              </svg>
+            </div>
+          </div>
+          <div class="delete-modal-body">
+            <div class="delete-modal-title">Hapus Paket Internet</div>
+            <div class="delete-modal-desc">
+              Anda akan menghapus paket
+              <strong>"{{ deleteTarget.name }}"</strong>.
+              Tindakan ini permanen dan tidak dapat dibatalkan.
+            </div>
+          </div>
+          <div class="delete-modal-footer">
+            <button class="btn btn--secondary" @click="cancelDelete">Batal</button>
+            <button class="btn btn--danger" @click="confirmDelete" :disabled="loadingDelete">
+              <svg v-if="loadingDelete" class="btn-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+              {{ loadingDelete ? 'Menghapus...' : 'Ya, Hapus' }}
+            </button>
+          </div>
+        </div>
+      </div>
     </Teleport>
   </div>
 </template>
@@ -277,6 +309,9 @@ function togglePkgSort(key) {
 // Modal & Form state
 const showModal = ref(false);
 const isEdit = ref(false);
+const showDeleteModal = ref(false);
+const loadingDelete = ref(false);
+const deleteTarget = ref({ id: null, name: '' });
 const loadingSubmit = ref(false);
 const errorMsg = ref("");
 
@@ -477,16 +512,28 @@ const handleSubmit = async () => {
   }
 };
 
-const handleDelete = async (id, name) => {
-  if (confirm(`Apakah Anda yakin ingin menghapus paket internet "${name}"? Tindakan ini tidak dapat dibatalkan.`)) {
-    try {
-      await deletePackage(id);
-      packages.value = packages.value.filter((p) => p.id !== id);
-      toast.success("Paket berhasil dihapus");
-    } catch (err) {
-      toast.error("Gagal menghapus paket: " + (err.message || err));
-    }
+const handleDelete = (id, name) => {
+  deleteTarget.value = { id, name };
+  showDeleteModal.value = true;
+};
+
+const confirmDelete = async () => {
+  loadingDelete.value = true;
+  try {
+    await deletePackage(deleteTarget.value.id);
+    packages.value = packages.value.filter((p) => p.id !== deleteTarget.value.id);
+    toast.success(`Paket "${deleteTarget.value.name}" berhasil dihapus`);
+    showDeleteModal.value = false;
+  } catch (err) {
+    toast.error("Gagal menghapus paket: " + (err.message || err));
+  } finally {
+    loadingDelete.value = false;
   }
+};
+
+const cancelDelete = () => {
+  showDeleteModal.value = false;
+  deleteTarget.value = { id: null, name: '' };
 };
 </script>
 
@@ -575,11 +622,80 @@ const handleDelete = async (id, name) => {
   background: var(--border);
   color: var(--text-1);
 }
+.btn--danger {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn--danger:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
+}
+
+/* Delete Confirm Modal */
+.delete-modal-card {
+  max-width: 400px;
+  text-align: center;
+  padding: 0;
+}
+.delete-modal-icon-wrap {
+  padding: 28px 20px 16px;
+  display: flex;
+  justify-content: center;
+}
+.delete-modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #FEF2F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+}
+.delete-modal-body {
+  padding: 0 24px 20px;
+}
+.delete-modal-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 8px;
+}
+.delete-modal-desc {
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+.delete-modal-desc strong {
+  color: var(--text-1);
+}
+.delete-modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.delete-modal-footer .btn {
+  min-width: 110px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.btn-spinner {
+  animation: spin 0.8s linear infinite;
 }
 
 /* Charts */
