@@ -7,6 +7,7 @@ import com.vnet.vnet_backend.entity.CustomerStatus;
 import com.vnet.vnet_backend.entity.User;
 import com.vnet.vnet_backend.enums.Role;
 import com.vnet.vnet_backend.repository.UserRepository;
+import com.vnet.vnet_backend.repository.UserSessionRepository;
 import com.vnet.vnet_backend.service.AnalyticsService;
 import com.vnet.vnet_backend.service.CustomerService;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +45,7 @@ class CustomerControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private JwtProvider jwtProvider;
     @Autowired private UserRepository userRepository;
+    @Autowired private UserSessionRepository userSessionRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -54,6 +56,7 @@ class CustomerControllerTest {
 
     @BeforeEach
     void setUp() {
+        userSessionRepository.deleteAll();
         userRepository.deleteAll();
         User admin = User.builder()
                 .name("Admin")

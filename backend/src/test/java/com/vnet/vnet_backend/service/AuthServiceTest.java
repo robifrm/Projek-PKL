@@ -49,7 +49,8 @@ class AuthServiceTest {
         ReflectionTestUtils.setField(jwtProvider, "tokenValidityInMilliseconds", 3_600_000L);
         ReflectionTestUtils.setField(otpService,  "expirationMinutes", 5L);
 
-        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, otpService, emailService);
+        UserSessionService userSessionService = mock(UserSessionService.class);
+        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, otpService, emailService, userSessionService);
     }
 
     // ─────────────────────────────────────────────

@@ -238,3 +238,19 @@ export function saveSystemConfig(payload) {
   });
 }
 
+export function getActiveSessions() {
+  return apiFetch("/users/sessions");
+}
+
+export function revokeSession(id) {
+  return apiFetch(`/users/sessions/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function logout() {
+  return apiFetch("/auth/logout", {
+    method: "POST",
+  });
+}
+

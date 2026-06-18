@@ -288,7 +288,10 @@
           <div class="sec-block">
             <div class="sec-block-title">Active Sessions</div>
             <div class="session-list">
-              <div class="session-row" v-for="s in sessions" :key="s.device">
+              <div v-if="sessions.length === 0" class="session-empty">
+                Tidak ada sesi aktif yang ditemukan.
+              </div>
+              <div class="session-row" v-for="s in sessions" :key="s.id">
                 <div
                   class="session-dot"
                   :class="s.current ? 'session-dot--active' : ''"
@@ -302,7 +305,7 @@
                   </div>
                   <div class="session-meta">{{ s.ip }} - {{ s.time }}</div>
                 </div>
-                <button v-if="!s.current" class="btn-sm btn-sm--danger" @click="revokeSession(s.device)">
+                <button v-if="!s.current" class="btn-sm btn-sm--danger" @click="revokeSession(s)">
                   Revoke
                 </button>
               </div>
@@ -475,7 +478,7 @@
 
 <script setup>
 import { ref, computed, defineComponent, h, onMounted, watch } from "vue";
-import { updateProfile, changePassword as apiChangePassword, getSystemConfig, saveSystemConfig } from "@/services/api";
+import { updateProfile, changePassword as apiChangePassword, getSystemConfig, saveSystemConfig, getActiveSessions, revokeSession as apiRevokeSession } from "@/services/api";
 
 const activeSection = ref("profile");
 const saved = ref(false);
@@ -506,11 +509,7 @@ const show2FAModal = ref(false);
 const tfaCode = ref("");
 const tfaError = ref("");
 
-const sessions = ref([
-  { device: "Chrome on Windows", ip: "192.168.1.100", time: "Now", current: true },
-  { device: "Firefox on MacOS", ip: "192.168.1.101", time: "2 hrs ago", current: false },
-  { device: "Safari on iPhone", ip: "114.4.22.11", time: "Yesterday", current: false },
-]);
+const sessions = ref([]);
 
 const displayPreferences = ref({
   language: "Bahasa Indonesia",
@@ -792,6 +791,8 @@ onMounted(async () => {
       displayPreferences.value = { ...displayPreferences.value, ...JSON.parse(storedDisplay) };
     } catch (e) {}
   }
+
+  await loadSessions();
 });
 
 watch(() => displayPreferences.value.rowDensity, (newDensity) => {
@@ -857,10 +858,26 @@ function confirm2FA() {
   alert("Two-Factor Authentication (2FA) berhasil diaktifkan!");
 }
 
-function revokeSession(device) {
-  if (confirm(`Apakah Anda yakin ingin mengeluarkan sesi di ${device}?`)) {
-    sessions.value = sessions.value.filter(s => s.device !== device);
-    alert(`Sesi untuk ${device} berhasil dikeluarkan.`);
+async function loadSessions() {
+  try {
+    const res = await getActiveSessions();
+    if (res) {
+      sessions.value = res;
+    }
+  } catch (err) {
+    console.error("Gagal memuat sesi aktif:", err);
+  }
+}
+
+async function revokeSession(session) {
+  if (confirm(`Apakah Anda yakin ingin mengeluarkan sesi di ${session.device}?`)) {
+    try {
+      await apiRevokeSession(session.id);
+      sessions.value = sessions.value.filter(s => s.id !== session.id);
+      alert(`Sesi untuk ${session.device} berhasil dikeluarkan.`);
+    } catch (err) {
+      alert("Gagal mengeluarkan sesi: " + err.message);
+    }
   }
 }
 
@@ -882,6 +899,7 @@ async function saveAll() {
       };
       localStorage.setItem("vnet_user", JSON.stringify(u));
       window.dispatchEvent(new CustomEvent("vnet-user-updated", { detail: u }));
+      await loadSessions();
     } catch (err) {
       alert(err.message || "Gagal memperbarui profil");
       return;
@@ -1379,6 +1397,13 @@ async function saveAll() {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.session-empty {
+  color: var(--text-3);
+  font-size: 13px;
+  text-align: center;
+  padding: 16px 0;
+  font-style: italic;
 }
 .session-row {
   display: flex;

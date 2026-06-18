@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,8 +51,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(
+            @RequestBody LoginRequest request,
+            @RequestHeader(value = "User-Agent", required = false) String userAgent,
+            HttpServletRequest servletRequest) {
+        return ResponseEntity.ok(authService.login(request, userAgent, getClientIp(servletRequest)));
     }
 
     @PostMapping("/forgot-password")
@@ -75,13 +80,16 @@ public class AuthController {
 
 
     @PostMapping("/login-init")
-    public ResponseEntity<AuthResponse> loginInit(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<AuthResponse> loginInit(
+            @RequestBody Map<String, Object> payload,
+            @RequestHeader(value = "User-Agent", required = false) String userAgent,
+            HttpServletRequest servletRequest) {
         validateCaptchaIfPresent(payload);
 
         LoginRequest request = new LoginRequest();
         request.setEmail(firstText(payload, "email", "username"));
         request.setPassword(firstText(payload, "password"));
-        return ResponseEntity.ok(authService.login(request));
+        return ResponseEntity.ok(authService.login(request, userAgent, getClientIp(servletRequest)));
     }
 
     @PostMapping("/login-confirm")
@@ -128,6 +136,26 @@ public class AuthController {
             }
         }
         return null;
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            authService.logout(token);
+        }
+        Map<String, String> response = new LinkedHashMap<>();
+        response.put("message", "Logout berhasil");
+        return ResponseEntity.ok(response);
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null || xfHeader.isEmpty()) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0].trim();
     }
 
     private Map<String, Object> responseBody(AuthMessageResponse response) {

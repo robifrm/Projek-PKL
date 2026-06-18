@@ -74,7 +74,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/addresses/insights").hasAnyRole("SUPER_ADMIN", "STAFF")
                 .requestMatchers(HttpMethod.GET, "/api/system-config").hasAnyRole("SUPER_ADMIN", "STAFF")
                 .requestMatchers(HttpMethod.PUT, "/api/system-config").hasRole("SUPER_ADMIN")
-                .requestMatchers("/api/users/profile", "/api/users/change-password").hasAnyRole("SUPER_ADMIN", "STAFF")
+                .requestMatchers("/api/users/profile", "/api/users/change-password", "/api/users/sessions", "/api/users/sessions/**").hasAnyRole("SUPER_ADMIN", "STAFF")
                 .requestMatchers("/api/users/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/api/**").hasRole("SUPER_ADMIN")
                 .anyRequest().permitAll()

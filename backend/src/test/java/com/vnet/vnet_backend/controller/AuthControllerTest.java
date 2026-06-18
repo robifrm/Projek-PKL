@@ -84,7 +84,7 @@ class AuthControllerTest {
                 .id(1L).token("jwt.token.here")
                 .email("admin@vnet.id").name("Admin").username("admin")
                 .role(Role.SUPER_ADMIN).isVerified(true).build();
-        when(authService.login(any())).thenReturn(authResp);
+        when(authService.login(any(), any(), any())).thenReturn(authResp);
 
         Map<String, String> body = Map.of("email", "admin@vnet.id", "password", "pass123");
 
@@ -99,7 +99,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /api/auth/login — password salah mengembalikan 401")
     void login_wrongPassword_shouldReturn401() throws Exception {
-        when(authService.login(any()))
+        when(authService.login(any(), any(), any()))
                 .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email atau password salah"));
 
         Map<String, String> body = Map.of("email", "x@vnet.id", "password", "salah");
@@ -113,7 +113,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /api/auth/login — akun belum verifikasi mengembalikan 403")
     void login_unverifiedAccount_shouldReturn403() throws Exception {
-        when(authService.login(any()))
+        when(authService.login(any(), any(), any()))
                 .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Email belum diverifikasi"));
 
         Map<String, String> body = Map.of("email", "new@vnet.id", "password", "pass123");

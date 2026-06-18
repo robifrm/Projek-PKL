@@ -52,6 +52,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppTopbar  from '@/components/layout/AppTopbar.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
+import { logout as apiLogout } from '@/services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -81,11 +82,17 @@ function handleRequestLogout() {
   showLogoutModal.value = true
 }
 
-function confirmLogout() {
+async function confirmLogout() {
   showLogoutModal.value = false
-  localStorage.removeItem("vnet_token");
-  localStorage.removeItem("vnet_user");
-  router.push("/login");
+  try {
+    await apiLogout()
+  } catch (err) {
+    console.error("Gagal membersihkan sesi di server:", err)
+  } finally {
+    localStorage.removeItem("vnet_token")
+    localStorage.removeItem("vnet_user")
+    router.push("/login")
+  }
 }
 
 function onResize() {

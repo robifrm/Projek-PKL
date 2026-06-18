@@ -33,6 +33,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final OtpService otpService;
     private final EmailService emailService;
+    private final UserSessionService userSessionService;
 
     @Transactional
     public AuthMessageResponse register(RegisterRequest request) {
@@ -73,17 +74,25 @@ public class AuthService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
+        return login(request, null, null);
+    }
+
+    @Transactional
+    public AuthResponse login(LoginRequest request, String userAgent, String ipAddress) {
         User user = findByUsernameOrThrow(request.getEmail());
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username atau password salah");
         }
 
+        String token = jwtProvider.generateToken(user);
+        userSessionService.createSession(user, token, userAgent, ipAddress);
+
         return AuthResponse.builder()
                 .id(user.getId())
-                .token(jwtProvider.generateToken(user))
+                .token(token)
                 .email(user.getUsername())
                 .name(user.getName())
                 .username(user.getUsername())
@@ -91,6 +100,11 @@ public class AuthService {
                 .role(user.getRole())
                 .isVerified(true)
                 .build();
+    }
+
+    @Transactional
+    public void logout(String token) {
+        userSessionService.revokeSessionByToken(token);
     }
 
     private User findByUsernameOrThrow(String username) {

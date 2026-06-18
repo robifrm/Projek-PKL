@@ -3,6 +3,8 @@ package com.vnet.vnet_backend.controller;
 import com.vnet.vnet_backend.config.JwtProvider;
 import com.vnet.vnet_backend.entity.User;
 import com.vnet.vnet_backend.repository.UserRepository;
+import com.vnet.vnet_backend.service.UserSessionService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,9 +27,10 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final UserSessionService userSessionService;
 
     @PutMapping("/profile")
-    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody ProfileUpdateRequest request) {
+    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody ProfileUpdateRequest request, HttpServletRequest servletRequest) {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsernameIgnoreCase(currentUsername)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User tidak ditemukan"));
@@ -53,6 +56,14 @@ public class UserController {
 
         // Regenerate JWT token since username might have changed
         String newToken = jwtProvider.generateToken(saved);
+
+        // Update active session token in DB
+        String oldToken = null;
+        String authHeader = servletRequest.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            oldToken = authHeader.substring(7);
+        }
+        userSessionService.updateSessionToken(oldToken, newToken);
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", "Profil berhasil diperbarui");

@@ -5,6 +5,7 @@ import com.vnet.vnet_backend.config.JwtProvider;
 import com.vnet.vnet_backend.entity.User;
 import com.vnet.vnet_backend.enums.Role;
 import com.vnet.vnet_backend.repository.UserRepository;
+import com.vnet.vnet_backend.repository.UserSessionRepository;
 import com.vnet.vnet_backend.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +37,7 @@ class ImportControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private JwtProvider jwtProvider;
     @Autowired private UserRepository userRepository;
+    @Autowired private UserSessionRepository userSessionRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -49,6 +51,7 @@ class ImportControllerTest {
 
     @BeforeEach
     void setUp() {
+        userSessionRepository.deleteAll();
         userRepository.deleteAll();
         User admin = User.builder()
                 .name("Super Admin")

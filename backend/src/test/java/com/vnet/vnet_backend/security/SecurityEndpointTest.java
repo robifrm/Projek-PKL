@@ -5,6 +5,7 @@ import com.vnet.vnet_backend.config.JwtProvider;
 import com.vnet.vnet_backend.entity.User;
 import com.vnet.vnet_backend.enums.Role;
 import com.vnet.vnet_backend.repository.UserRepository;
+import com.vnet.vnet_backend.repository.UserSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,7 @@ class SecurityEndpointTest {
     @Autowired private MockMvc      mockMvc;
     @Autowired private JwtProvider  jwtProvider;
     @Autowired private UserRepository userRepository;
+    @Autowired private UserSessionRepository userSessionRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private String adminToken;
@@ -48,6 +50,7 @@ class SecurityEndpointTest {
 
     @BeforeEach
     void setUp() {
+        userSessionRepository.deleteAll();
         userRepository.deleteAll();
 
         // Save users to DB so JwtFilter can load them
