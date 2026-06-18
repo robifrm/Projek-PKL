@@ -5,10 +5,14 @@ import com.vnet.vnet_backend.entity.Agent;
 import com.vnet.vnet_backend.entity.Customer;
 import com.vnet.vnet_backend.entity.CustomerStatus;
 import com.vnet.vnet_backend.entity.InternetPackage;
+import com.vnet.vnet_backend.entity.User;
+import com.vnet.vnet_backend.enums.Role;
 import com.vnet.vnet_backend.repository.AgentRepository;
 import com.vnet.vnet_backend.repository.CustomerRepository;
 import com.vnet.vnet_backend.repository.InternetPackageRepository;
+import com.vnet.vnet_backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -39,15 +43,18 @@ public class AnalyticsService {
     private final CustomerRepository customerRepository;
     private final AgentRepository agentRepository;
     private final InternetPackageRepository packageRepository;
+    private final UserRepository userRepository;
 
     public AnalyticsService(
             CustomerRepository customerRepository,
             AgentRepository agentRepository,
-            InternetPackageRepository packageRepository
+            InternetPackageRepository packageRepository,
+            UserRepository userRepository
     ) {
         this.customerRepository = customerRepository;
         this.agentRepository = agentRepository;
         this.packageRepository = packageRepository;
+        this.userRepository = userRepository;
     }
 
     private long lastCacheTimeOverview = 0;
@@ -81,11 +88,23 @@ public class AnalyticsService {
     @Transactional(readOnly = true)
     public Map<String, Object> getDashboardOverview(String monthParam) {
         synchronized (lock) {
+            String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+            Optional<User> currentUserOpt = userRepository.findByUsernameIgnoreCase(currentUsername);
+            User currentUser = currentUserOpt.orElse(null);
+
+            boolean isAgent = currentUser != null && currentUser.getRole() == Role.AGENT;
+            Long agentId = isAgent && currentUser.getAgent() != null ? currentUser.getAgent().getId() : null;
+
             long now = System.currentTimeMillis();
-            if (monthParam == null && cachedOverview != null && (now - lastCacheTimeOverview < CACHE_TTL)) {
+            if (!isAgent && monthParam == null && cachedOverview != null && (now - lastCacheTimeOverview < CACHE_TTL)) {
                 return cachedOverview;
             }
             List<Customer> customers = customerRepository.findAllWithRelations();
+            if (isAgent && agentId != null) {
+                customers = customers.stream()
+                        .filter(c -> c.getAgent() != null && c.getAgent().getId().equals(agentId))
+                        .collect(Collectors.toList());
+            }
             
             LocalDate customAnchor = null;
             if (monthParam != null && !monthParam.isBlank()) {
@@ -101,7 +120,13 @@ public class AnalyticsService {
             overview.put("summary", getSummary(customers, customAnchor));
             overview.put("salesTrend", salesTrend(customers, customAnchor));
             overview.put("packages", packageDistribution(customers));
-            overview.put("agents", agentPerformanceRows(customers, agentRepository.findAll(), customAnchor));
+
+            List<Agent> agentsToQuery = agentRepository.findAll();
+            if (isAgent && currentUser.getAgent() != null) {
+                agentsToQuery = List.of(currentUser.getAgent());
+            }
+            overview.put("agents", agentPerformanceRows(customers, agentsToQuery, customAnchor));
+            
             overview.put("recentRegistrations", recentRegistrations(customers));
             overview.put("cityDistribution", cityDistribution(customers));
             overview.put("cumulativeGrowth", cumulativeGrowth(customers, customAnchor));
@@ -109,7 +134,7 @@ public class AnalyticsService {
             overview.put("statusDistribution", statusDistribution(customers));
             overview.put("churnRisk", churnRisk(customers));
 
-            if (monthParam == null) {
+            if (!isAgent && monthParam == null) {
                 cachedOverview = overview;
                 lastCacheTimeOverview = now;
             }
@@ -142,11 +167,23 @@ public class AnalyticsService {
     @Transactional(readOnly = true)
     public Map<String, Object> getAddressInsights() {
         synchronized (lock) {
+            String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+            Optional<User> currentUserOpt = userRepository.findByUsernameIgnoreCase(currentUsername);
+            User currentUser = currentUserOpt.orElse(null);
+
+            boolean isAgent = currentUser != null && currentUser.getRole() == Role.AGENT;
+            Long agentId = isAgent && currentUser.getAgent() != null ? currentUser.getAgent().getId() : null;
+
             long now = System.currentTimeMillis();
-            if (cachedAddress != null && (now - lastCacheTimeAddress < CACHE_TTL)) {
+            if (!isAgent && cachedAddress != null && (now - lastCacheTimeAddress < CACHE_TTL)) {
                 return cachedAddress;
             }
             List<Customer> customers = customerRepository.findAllWithRelations();
+            if (isAgent && agentId != null) {
+                customers = customers.stream()
+                        .filter(c -> c.getAgent() != null && c.getAgent().getId().equals(agentId))
+                        .collect(Collectors.toList());
+            }
             Map<Long, List<Customer>> grouped = customers.stream()
                     .filter(customer -> customer.getAddress() != null)
                     .collect(Collectors.groupingBy(customer -> customer.getAddress().getId(), LinkedHashMap::new, Collectors.toList()));
@@ -711,12 +748,6 @@ public class AnalyticsService {
     }
 
     private double customerProfit(Customer customer) {
-        if (customer.getProfit() != null && customer.getProfit() > 0) {
-            return customer.getProfit();
-        }
-        if (customer.getPkg() != null && customer.getPkg().getProfit() != null && customer.getPkg().getProfit() > 0) {
-            return customer.getPkg().getProfit();
-        }
         return 0.0;
     }
 

@@ -34,7 +34,7 @@ async function apiFetch(path, options = {}) {
       }
     }
 
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       localStorage.removeItem("vnet_token");
       localStorage.removeItem("vnet_user");
       if (window.location.pathname !== "/login" && window.location.pathname !== "/signup") {
@@ -271,5 +271,26 @@ export function logout() {
   return apiFetch("/auth/logout", {
     method: "POST",
   });
+}
+
+export function getUsers() {
+  return apiFetch("/users");
+}
+
+export function createUser(payload) {
+  return apiFetch("/users", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteUser(id) {
+  return apiFetch(`/users/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function getAgentsList() {
+  return apiFetch("/agents");
 }
 

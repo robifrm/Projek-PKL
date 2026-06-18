@@ -86,6 +86,22 @@ router.beforeEach((to, from, next) => {
   } else if (to.meta.guestOnly && token) {
     next("/dashboard");
   } else {
+    if (token) {
+      const userStr = localStorage.getItem("vnet_user");
+      let role = null;
+      if (userStr) {
+        try {
+          role = JSON.parse(userStr).role;
+        } catch (e) {}
+      }
+      if (role === 'AGENT') {
+        const allowedRoutes = ["/dashboard", "/packages", "/customers", "/address-insights", "/settings", "/support", "/login"];
+        if (!allowedRoutes.includes(to.path)) {
+          next("/dashboard");
+          return;
+        }
+      }
+    }
     next();
   }
 });

@@ -24,6 +24,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     long countByAgentId(Long agentId);
 
+    long countByAgentIdAndStatus(Long agentId, CustomerStatus status);
+
     boolean existsByPkgId(Long pkgId);
 
     /**
@@ -37,4 +39,16 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @EntityGraph(attributePaths = {"pkg", "address", "agent"})
     @Query("SELECT c FROM Customer c WHERE LOWER(c.nama) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(c.custId) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Customer> searchCustomers(@Param("search") String search, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"pkg", "address", "agent"})
+    @Query("SELECT c FROM Customer c WHERE c.agent.id = :agentId")
+    List<Customer> findAllByAgentId(@Param("agentId") Long agentId);
+
+    @EntityGraph(attributePaths = {"pkg", "address", "agent"})
+    @Query("SELECT c FROM Customer c WHERE c.agent.id = :agentId AND (LOWER(c.nama) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(c.custId) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Customer> searchCustomersByAgentId(@Param("agentId") Long agentId, @Param("search") String search, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"pkg", "address", "agent"})
+    @Query("SELECT c FROM Customer c WHERE c.agent.id = :agentId")
+    Page<Customer> findAllByAgentIdPage(@Param("agentId") Long agentId, Pageable pageable);
 }

@@ -261,6 +261,27 @@ const logout = () => {
 
 async function loadNotifications() {
   try {
+    const rawUser = localStorage.getItem("vnet_user");
+    let role = "";
+    if (rawUser) {
+      try {
+        role = JSON.parse(rawUser).role;
+      } catch (e) {}
+    }
+
+    if (role === "AGENT") {
+      notifications.value = [
+        {
+          id: "healthy",
+          type: "success",
+          title: "System healthy",
+          desc: "Customer data is synced.",
+          to: "/customers",
+        }
+      ];
+      return;
+    }
+
     const [overview, importStats] = await Promise.all([
       getDashboardOverview(),
       getImportStats(),

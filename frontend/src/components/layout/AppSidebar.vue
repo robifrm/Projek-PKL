@@ -31,7 +31,7 @@
     <!-- Nav -->
     <nav class="sidebar__nav">
       <RouterLink
-        v-for="item in navItems"
+        v-for="item in filteredNavItems"
         :key="item.to"
         :to="item.to"
         class="nav-item"
@@ -177,6 +177,14 @@ const navItems = [
   { to: "/agent-performance", label: "Agent Performance", icon: IconAgent },
   { to: "/address-insights", label: "Address Insights", icon: IconAddress },
 ];
+
+const filteredNavItems = computed(() => {
+  if (user.value && user.value.role === 'AGENT') {
+    const allowed = ['/dashboard', '/packages', '/customers', '/address-insights'];
+    return navItems.filter(item => allowed.includes(item.to));
+  }
+  return navItems;
+});
 </script>
 
 <style scoped>

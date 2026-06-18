@@ -6,7 +6,7 @@
         <h1 class="page-title">Packages Management</h1>
         <p class="page-sub">Manage connectivity plans, pricing, speeds, and profitability metrics.</p>
       </div>
-      <div class="page-actions">
+      <div class="page-actions" v-if="user.role !== 'AGENT'">
         <button class="btn btn--primary" @click="openAddModal">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -101,7 +101,7 @@
       </svg>
       <h3>Belum Ada Paket Internet</h3>
       <p>Tidak ada paket internet yang cocok dengan kata kunci pencarian Anda atau database masih kosong.</p>
-      <button class="btn btn--primary" @click="openAddModal" style="margin-top: 14px;">Tambah Paket Baru</button>
+      <button class="btn btn--primary" @click="openAddModal" style="margin-top: 14px;" v-if="user.role !== 'AGENT'">Tambah Paket Baru</button>
     </div>
 
     <!-- Packages Table -->
@@ -132,14 +132,14 @@
                 </span>
               </th>
               <th class="th-sort" @click="togglePkgSort('profit')">
-                Est. Profit (Rp)
+                PPN 11% (Rp)
                 <span class="sort-icon">
                   <svg v-if="pkgSortKey === 'profit'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline :points="pkgSortDir === 'asc' ? '18 15 12 9 6 15' : '6 9 12 15 18 9'" /></svg>
                   <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12" /></svg>
                 </span>
               </th>
               <th>Description</th>
-              <th>Actions</th>
+              <th v-if="user.role !== 'AGENT'">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -149,11 +149,11 @@
                 <span class="badge-speed">{{ p.speed }} Mbps</span>
               </td>
               <td class="td-price">{{ formatPrice(p.price) }}</td>
-              <td class="td-profit" style="color: var(--green-ok); font-weight: 600;">
-                {{ formatPrice(p.profit) }}
+              <td class="td-profit" style="color: var(--text-2); font-weight: 500;">
+                {{ formatPrice(Math.round(p.price * 0.11)) }}
               </td>
               <td class="td-detail">{{ p.description || '-' }}</td>
-              <td class="td-actions">
+              <td class="td-actions" v-if="user.role !== 'AGENT'">
                 <button class="btn-icon btn-edit" title="Edit" @click="openEditModal(p)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -217,11 +217,11 @@
                 </div>
                 <div class="form-group flex-1">
                   <label class="form-label">Harga (Rp)</label>
-                  <input type="number" step="any" v-model.number="form.price" class="form-input" required />
+                  <input type="number" step="any" v-model.number="form.price" @input="form.profit = Math.round(form.price * 0.11)" class="form-input" required />
                 </div>
                 <div class="form-group flex-1">
-                  <label class="form-label">Margin (Rp)</label>
-                  <input type="number" step="any" v-model.number="form.profit" class="form-input" required />
+                  <label class="form-label">PPN 11% (Rp)</label>
+                  <input type="number" :value="form.price ? Math.round(form.price * 0.11) : 0" class="form-input" disabled style="background: var(--bg-hover, rgba(0,0,0,0.03)); cursor: not-allowed;" />
                 </div>
               </div>
 
@@ -286,6 +286,17 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 const toast = useToast();
 
+const user = ref({ role: "" });
+
+const loadUserProfile = () => {
+  const stored = localStorage.getItem("vnet_user");
+  if (stored) {
+    try {
+      user.value = JSON.parse(stored);
+    } catch (e) {}
+  }
+};
+
 const packages = ref([]);
 const loading = ref(true);
 const searchQuery = ref("");
@@ -327,6 +338,7 @@ const form = ref({
 const handleTopbarSearch = (e) => { searchQuery.value = e.detail || ''; };
 
 onMounted(() => {
+  loadUserProfile();
   fetchData();
   window.addEventListener('topbar-search', handleTopbarSearch);
 });
@@ -483,7 +495,7 @@ const openEditModal = (pkg) => {
     name: pkg.name,
     speed: pkg.speed,
     price: pkg.price,
-    profit: pkg.profit,
+    profit: Math.round(pkg.price * 0.11),
     description: pkg.description || ""
   };
   showModal.value = true;

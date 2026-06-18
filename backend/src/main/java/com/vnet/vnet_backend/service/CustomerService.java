@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;
+import com.vnet.vnet_backend.enums.Role;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,11 +20,46 @@ public class CustomerService {
     private final AgentRepository agentRepository;
     private final InternetPackageRepository internetPackageRepository;
     private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
 
-    public java.util.Optional<Customer> findByCustId(String custId) { return customerRepository.findByCustId(custId); }
+    // Helper to get current agent ID if current user is an AGENT
+    private Long getCurrentAgentId() {
+        org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return null;
+        }
+        String username = auth.getName();
+        if (username == null || username.equalsIgnoreCase("anonymousUser")) {
+            return null;
+        }
+        User user = userRepository.findByUsernameIgnoreCase(username).orElse(null);
+        if (user != null && user.getRole() == Role.AGENT && user.getAgent() != null) {
+            return user.getAgent().getId();
+        }
+        return null;
+    }
+
+    public java.util.Optional<Customer> findByCustId(String custId) {
+        java.util.Optional<Customer> opt = customerRepository.findByCustId(custId);
+        Long agentId = getCurrentAgentId();
+        if (agentId != null && opt.isPresent()) {
+            Customer c = opt.get();
+            if (c.getAgent() == null || !c.getAgent().getId().equals(agentId)) {
+                return java.util.Optional.empty();
+            }
+        }
+        return opt;
+    }
 
     // CREATE CUSTOMER
     public Customer createCustomer(Customer customer) {
+        // If logged-in user is an agent, force their agent association
+        Long agentId = getCurrentAgentId();
+        if (agentId != null) {
+            Agent agent = agentRepository.findById(agentId)
+                    .orElseThrow(() -> new RuntimeException("Agent not found"));
+            customer.setAgent(agent);
+        }
 
         // Auto-generate custId jika kosong
         if (customer.getCustId() == null || customer.getCustId().trim().isEmpty()) {
@@ -136,9 +173,22 @@ public class CustomerService {
     }
 
     // GET ALL
-    public List<Customer> getAllCustomers() { return customerRepository.findAllWithRelations(); }
+    public List<Customer> getAllCustomers() {
+        Long agentId = getCurrentAgentId();
+        if (agentId != null) {
+            return customerRepository.findAllByAgentId(agentId);
+        }
+        return customerRepository.findAllWithRelations();
+    }
 
     public Page<Customer> getCustomersPage(String search, Pageable pageable) {
+        Long agentId = getCurrentAgentId();
+        if (agentId != null) {
+            if (search == null || search.trim().isEmpty()) {
+                return customerRepository.findAllByAgentIdPage(agentId, pageable);
+            }
+            return customerRepository.searchCustomersByAgentId(agentId, search, pageable);
+        }
         if (search == null || search.trim().isEmpty()) {
             return customerRepository.findAll(pageable);
         }
@@ -150,11 +200,26 @@ public class CustomerService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
+        Long agentId = getCurrentAgentId();
+        if (agentId != null) {
+            if (customer.getAgent() == null || !customer.getAgent().getId().equals(agentId)) {
+                throw new RuntimeException("Unauthorized: Customer does not belong to your agent");
+            }
+        }
+
         customer.setStatus(status);
         return customerRepository.save(customer);
     }
     public void deleteCustomer(Long id) {
-        if (!customerRepository.existsById(id)) throw new RuntimeException("Customer not found");
-        customerRepository.deleteById(id);
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        Long agentId = getCurrentAgentId();
+        if (agentId != null) {
+            if (customer.getAgent() == null || !customer.getAgent().getId().equals(agentId)) {
+                throw new RuntimeException("Unauthorized: Customer does not belong to your agent");
+            }
+        }
+        customerRepository.delete(customer);
     }
 }

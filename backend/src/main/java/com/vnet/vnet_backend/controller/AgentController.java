@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,6 +42,11 @@ public class AgentController {
     @GetMapping("/performance")
     public ResponseEntity<Map<String, Object>> performance(@RequestParam(defaultValue = "month") String period) {
         return ResponseEntity.ok(analyticsService.getAgentPerformance(period));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Agent>> getAll() {
+        return ResponseEntity.ok(agentRepository.findAll());
     }
 
     @PostMapping

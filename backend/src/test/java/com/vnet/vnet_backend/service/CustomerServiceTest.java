@@ -26,6 +26,7 @@ class CustomerServiceTest {
     private AgentRepository           agentRepository;
     private InternetPackageRepository packageRepository;
     private AddressRepository         addressRepository;
+    private UserRepository            userRepository;
     private CustomerService           customerService;
 
     @BeforeEach
@@ -34,9 +35,10 @@ class CustomerServiceTest {
         agentRepository    = mock(AgentRepository.class);
         packageRepository  = mock(InternetPackageRepository.class);
         addressRepository  = mock(AddressRepository.class);
+        userRepository     = mock(UserRepository.class);
 
         customerService = new CustomerService(
-                customerRepository, agentRepository, packageRepository, addressRepository);
+                customerRepository, agentRepository, packageRepository, addressRepository, userRepository);
     }
 
     // ─────────────────────────────────────────────

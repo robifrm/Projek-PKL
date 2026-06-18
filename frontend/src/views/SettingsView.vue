@@ -401,6 +401,76 @@
             </div>
           </div>
         </div>
+
+        <!-- User Management (SUPER_ADMIN only) -->
+        <div v-show="activeSection === 'users'" class="settings-section card">
+          <div class="section-title">User Management</div>
+          <div class="section-sub">
+            Kelola data user dan agent yang memiliki akses ke dashboard backend.
+          </div>
+
+          <!-- Topbar action: Add User -->
+          <div class="user-management-actions" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+            <button class="btn btn--primary" @click="openAddUserModal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="margin-right: 6px;">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              Tambah User Baru
+            </button>
+          </div>
+
+          <!-- User Table -->
+          <div class="users-table-wrapper" style="overflow-x: auto; width: 100%;">
+            <table class="users-table" style="width: 100%; border-collapse: collapse; min-width: 600px;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border); text-align: left;">
+                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2);">NAMA</th>
+                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2);">USERNAME</th>
+                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2);">ROLE</th>
+                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2);">ASSOCIATED AGENT</th>
+                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2); text-align: right;">AKSI</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="u in usersList" :key="u.id" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                  <td style="padding: 12px 8px; font-size: 13px; font-weight: 500; color: var(--text-1);">{{ u.name }}</td>
+                  <td style="padding: 12px 8px; font-size: 13px; color: var(--text-3);">@{{ u.username }}</td>
+                  <td style="padding: 12px 8px; font-size: 13px;">
+                    <span :class="getRoleClass(u.role)" style="padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                      {{ u.role }}
+                    </span>
+                  </td>
+                  <td style="padding: 12px 8px; font-size: 13px; color: var(--text-2);">
+                    {{ u.agent ? u.agent.nama : '-' }}
+                  </td>
+                  <td style="padding: 12px 8px; font-size: 13px; text-align: right;">
+                    <button 
+                      class="btn-delete-user" 
+                      @click="requestDeleteUser(u)" 
+                      :disabled="u.username === profile.username"
+                      style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px; font-size: 12px; font-weight: 500;"
+                    >
+                      Hapus
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="loadError">
+                  <td colspan="5" style="text-align: center; padding: 20px; color: #ef4444; font-size: 13px; font-weight: 500;">
+                    {{ loadError }}
+                  </td>
+                </tr>
+                <tr v-else-if="usersList.length === 0">
+                  <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-3); font-size: 13px;">
+                    Tidak ada data user.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -504,11 +574,100 @@
       </div>
     </div>
   </Teleport>
+
+  <!-- Add User Modal -->
+  <Teleport to="body">
+    <div class="user-modal-backdrop" v-if="showAddUserModal" @click.self="closeAddUserModal">
+      <div class="user-modal-card">
+        <div class="user-modal-header">
+          <div class="user-modal-title">Tambah User Baru</div>
+          <button class="user-modal-close" @click="closeAddUserModal">&times;</button>
+        </div>
+        <form @submit.prevent="submitAddUser" class="user-modal-form">
+          <div class="form-group" style="margin-bottom: 12px; text-align: left;">
+            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Nama Lengkap</label>
+            <input type="text" v-model="newUserForm.name" class="form-input" placeholder="Masukkan nama lengkap" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-1);" />
+          </div>
+          <div class="form-group" style="margin-bottom: 12px; text-align: left;">
+            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Username</label>
+            <input type="text" v-model="newUserForm.username" class="form-input" placeholder="Masukkan username" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-1);" />
+          </div>
+          <div class="form-group" style="margin-bottom: 12px; text-align: left;">
+            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Password</label>
+            <input type="password" v-model="newUserForm.password" class="form-input" placeholder="Minimal 6 karakter" required minlength="6" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-1);" />
+          </div>
+          <div class="form-group" style="margin-bottom: 12px; text-align: left;">
+            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Role</label>
+            <select v-model="newUserForm.role" class="form-input" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-1);">
+              <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+              <option value="STAFF">STAFF</option>
+              <option value="AGENT">AGENT</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 12px; text-align: left;" v-if="newUserForm.role === 'AGENT'">
+            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Pilih Agen</label>
+            <select v-model="newUserForm.agentId" class="form-input" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-1);">
+              <option value="" disabled>-- {{ loadError ? 'Gagal memuat agen' : 'Pilih Agen' }} --</option>
+              <option v-for="ag in agentsList" :key="ag.id" :value="ag.id">
+                {{ ag.nama }}
+              </option>
+            </select>
+          </div>
+
+          <div class="user-modal-error" v-if="loadError" style="color: #ef4444; margin-top: 10px; font-size: 13px; text-align: left;">
+            {{ loadError }}
+          </div>
+
+          <div class="user-modal-error" v-if="addUserError" style="color: #ef4444; margin-top: 10px; font-size: 13px; text-align: left;">
+            {{ addUserError }}
+          </div>
+
+          <div class="user-modal-footer" style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn--secondary" @click="closeAddUserModal" style="background: none; border: 1px solid var(--border); color: var(--text-2);">Batal</button>
+            <button type="submit" class="btn btn--primary" :disabled="submittingUser">
+              {{ submittingUser ? 'Menyimpan...' : 'Simpan User' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </Teleport>
+
+  <!-- Delete User Confirm Modal -->
+  <Teleport to="body">
+    <div class="revoke-modal-backdrop" v-if="showDeleteUserModal" @click.self="cancelDeleteUser">
+      <div class="revoke-modal-card">
+        <div class="revoke-modal-icon-wrap" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 28px 20px 14px; display: flex; justify-content: center;">
+          <div class="revoke-modal-icon" style="width: 60px; height: 60px; border-radius: 50%; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="18" y1="8" x2="23" y2="13"/>
+              <line x1="23" y1="8" x2="18" y2="13"/>
+            </svg>
+          </div>
+        </div>
+        <div class="revoke-modal-body" style="padding: 0 24px 20px;">
+          <div class="revoke-modal-title" style="font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text-1); margin-bottom: 7px;">Hapus User</div>
+          <div class="revoke-modal-desc" style="font-size: 13px; color: var(--text-2); line-height: 1.6;">
+            Anda akan menghapus user <strong>{{ deleteUserTarget?.name }}</strong> (@{{ deleteUserTarget?.username }}).
+            Aksi ini tidak dapat dibatalkan.
+          </div>
+        </div>
+        <div class="revoke-modal-footer" style="padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 10px;">
+          <button class="btn-sm btn-sm--ghost" @click="cancelDeleteUser" style="background: transparent; border: 1px solid var(--border); color: var(--text-2); cursor: pointer; padding: 6px 12px; border-radius: var(--r-sm); font-size: 13px;">Batal</button>
+          <button class="btn-sm btn-sm--danger" @click="confirmDeleteUser" :disabled="deletingUser" style="background: #ef4444; border: 1px solid #ef4444; color: #fff; cursor: pointer; padding: 6px 12px; border-radius: var(--r-sm); font-size: 13px; font-weight: 600;">
+            {{ deletingUser ? 'Menghapus...' : 'Ya, Hapus' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref, computed, defineComponent, h, onMounted, watch } from "vue";
-import { updateProfile, changePassword as apiChangePassword, getSystemConfig, saveSystemConfig, getActiveSessions, revokeSession as apiRevokeSession } from "@/services/api";
+import { updateProfile, changePassword as apiChangePassword, getSystemConfig, saveSystemConfig, getActiveSessions, revokeSession as apiRevokeSession, getUsers, createUser, deleteUser, getAgentsList } from "@/services/api";
 
 const activeSection = ref("profile");
 const saved = ref(false);
@@ -642,9 +801,21 @@ const IconSlack = mkI([
   "M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z",
   "M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z",
 ]);
+const IconUsers = mkI([
+  "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2",
+  "M9 11a4 4 0 100-8 4 4 0 000 8z",
+  "M23 21v-2a4 4 0 00-3-3.87",
+  "M16 3.13a4 4 0 010 7.75"
+]);
 
 const sections = [
   { key: "profile", label: "Profile", sub: "Personal info", icon: IconProfile },
+  {
+    key: "users",
+    label: "Users",
+    sub: "User & agent accounts",
+    icon: IconUsers,
+  },
   {
     key: "system",
     label: "System",
@@ -673,7 +844,7 @@ const sections = [
 
 const filteredSections = computed(() => {
   return sections.filter(s => {
-    if (s.key === "system") {
+    if (s.key === "system" || s.key === "users") {
       return profile.value.role === "SUPER_ADMIN";
     }
     return true;
@@ -826,6 +997,9 @@ onMounted(async () => {
   }
 
   await loadSessions();
+  if (activeSection.value === 'users') {
+    loadUsersAndAgents();
+  }
 });
 
 watch(() => displayPreferences.value.rowDensity, (newDensity) => {
@@ -971,6 +1145,132 @@ async function saveAll() {
     saved.value = false;
   }, 2500);
 }
+
+const usersList = ref([]);
+const agentsList = ref([]);
+const showAddUserModal = ref(false);
+const showDeleteUserModal = ref(false);
+const deleteUserTarget = ref(null);
+const submittingUser = ref(false);
+const deletingUser = ref(false);
+const addUserError = ref("");
+const loadError = ref("");
+const newUserForm = ref({
+  name: "",
+  username: "",
+  password: "",
+  role: "AGENT",
+  agentId: ""
+});
+
+const loadUsersAndAgents = async () => {
+  loadError.value = "";
+  try {
+    const uData = await getUsers();
+    usersList.value = uData || [];
+  } catch (err) {
+    console.error("Failed to load users", err);
+    loadError.value = "Gagal memuat user: " + (err.message || err);
+  }
+
+  try {
+    const aData = await getAgentsList();
+    agentsList.value = aData || [];
+  } catch (err) {
+    console.error("Failed to load agents", err);
+    loadError.value = (loadError.value ? loadError.value + " | " : "") + "Gagal memuat agen: " + (err.message || err);
+  }
+};
+
+watch(activeSection, (newSection) => {
+  if (newSection === "users") {
+    loadUsersAndAgents();
+  }
+});
+
+const getRoleClass = (role) => {
+  if (role === 'SUPER_ADMIN') return 'role-badge-admin';
+  if (role === 'STAFF') return 'role-badge-staff';
+  return 'role-badge-agent';
+};
+
+const openAddUserModal = () => {
+  newUserForm.value = {
+    name: "",
+    username: "",
+    password: "",
+    role: "AGENT",
+    agentId: ""
+  };
+  addUserError.value = "";
+  showAddUserModal.value = true;
+};
+
+const closeAddUserModal = () => {
+  showAddUserModal.value = false;
+};
+
+const submitAddUser = async () => {
+  if (!newUserForm.value.name.trim() || !newUserForm.value.username.trim() || !newUserForm.value.password.trim()) {
+    addUserError.value = "Semua field wajib diisi";
+    return;
+  }
+  if (newUserForm.value.password.length < 6) {
+    addUserError.value = "Password minimal 6 karakter";
+    return;
+  }
+  if (newUserForm.value.role === 'AGENT' && !newUserForm.value.agentId) {
+    addUserError.value = "Pilih Agen wajib diisi jika role adalah AGENT";
+    return;
+  }
+
+  submittingUser.value = true;
+  addUserError.value = "";
+  try {
+    const payload = {
+      name: newUserForm.value.name.trim(),
+      username: newUserForm.value.username.trim(),
+      password: newUserForm.value.password,
+      role: newUserForm.value.role,
+    };
+    if (newUserForm.value.role === 'AGENT') {
+      payload.agentId = newUserForm.value.agentId;
+    }
+
+    await createUser(payload);
+    showAddUserModal.value = false;
+    await loadUsersAndAgents();
+  } catch (err) {
+    addUserError.value = err?.message || err || "Gagal membuat user";
+  } finally {
+    submittingUser.value = false;
+  }
+};
+
+const requestDeleteUser = (user) => {
+  deleteUserTarget.value = user;
+  showDeleteUserModal.value = true;
+};
+
+const cancelDeleteUser = () => {
+  showDeleteUserModal.value = false;
+  deleteUserTarget.value = null;
+};
+
+const confirmDeleteUser = async () => {
+  if (!deleteUserTarget.value) return;
+  deletingUser.value = true;
+  try {
+    await deleteUser(deleteUserTarget.value.id);
+    showDeleteUserModal.value = false;
+    await loadUsersAndAgents();
+  } catch (err) {
+    alert(err?.message || err || "Gagal menghapus user");
+  } finally {
+    deletingUser.value = false;
+    deleteUserTarget.value = null;
+  }
+};
 </script>
 
 <style scoped>
@@ -1844,5 +2144,88 @@ async function saveAll() {
 @keyframes scaleUp {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+/* Badges */
+.role-badge-admin {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.role-badge-staff {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+.role-badge-agent {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+/* User table styles */
+.users-table th, .users-table td {
+  border-bottom: 1px solid var(--border);
+}
+.users-table tr:hover {
+  background: rgba(0,0,0,0.01);
+}
+.dark .users-table tr:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+/* User Modal styling */
+.user-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.15s ease-out;
+}
+.user-modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card-bg, #fff);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  animation: popIn 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+.user-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.user-modal-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-1);
+}
+.user-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-3);
+  cursor: pointer;
+  line-height: 1;
+}
+.user-modal-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.user-modal-footer {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

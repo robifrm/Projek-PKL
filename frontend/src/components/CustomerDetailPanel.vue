@@ -99,14 +99,18 @@
               <div class="package-name">{{ detail.package.name }}</div>
               <div class="package-speed">{{ detail.package.speed ? detail.package.speed + ' Mbps' : '—' }}</div>
             </div>
-            <div class="panel-grid">
+            <div class="panel-grid" style="grid-template-columns: repeat(3, 1fr);">
               <div class="panel-field">
                 <div class="panel-field-label">Harga Paket</div>
                 <div class="panel-field-value">{{ formatRp(detail.package.price) }}</div>
               </div>
               <div class="panel-field">
-                <div class="panel-field-label">Profit/Paket</div>
-                <div class="panel-field-value text-green">{{ formatRp(detail.package.profit) }}</div>
+                <div class="panel-field-label">PPN 11%</div>
+                <div class="panel-field-value">{{ formatRp(Math.round(detail.package.price * 0.11)) }}</div>
+              </div>
+              <div class="panel-field">
+                <div class="panel-field-label">Total Bayar</div>
+                <div class="panel-field-value text-green" style="font-weight: 700;">{{ formatRp(Math.round(detail.package.price * 1.11)) }}</div>
               </div>
             </div>
             <div v-if="detail.package.description" class="package-desc">
@@ -169,7 +173,7 @@
           <div class="panel-grid">
             <div class="panel-field panel-field--highlight panel-field--green">
               <div class="panel-field-label">Profit</div>
-              <div class="panel-field-value text-green">{{ formatRp(detail.profit) }}</div>
+              <div class="panel-field-value text-green">Rp 0</div>
             </div>
             <div class="panel-field panel-field--highlight">
               <div class="panel-field-label">Biaya Pasang</div>

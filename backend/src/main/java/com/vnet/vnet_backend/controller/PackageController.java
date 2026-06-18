@@ -4,14 +4,19 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
 import com.vnet.vnet_backend.entity.InternetPackage;
+import com.vnet.vnet_backend.entity.User;
+import com.vnet.vnet_backend.enums.Role;
 import com.vnet.vnet_backend.repository.InternetPackageRepository;
 import com.vnet.vnet_backend.repository.CustomerRepository;
+import com.vnet.vnet_backend.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/packages")
@@ -20,9 +25,17 @@ public class PackageController {
 
     private final InternetPackageRepository packageRepository;
     private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
     @GetMapping
     public List<InternetPackage> getAll() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> currentUserOpt = userRepository.findByUsernameIgnoreCase(currentUsername);
+        User currentUser = currentUserOpt.orElse(null);
+
+        if (currentUser != null && currentUser.getRole() == Role.AGENT && currentUser.getAgent() != null) {
+            return packageRepository.findPackagesSoldByAgentId(currentUser.getAgent().getId());
+        }
         return packageRepository.findAll();
     }
 
