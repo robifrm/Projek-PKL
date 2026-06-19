@@ -1,0 +1,1 @@
+import{ag as a}from"./index-DKQ1oS2y.js";function e(){const r=a();return{success:(o,s=3e3)=>r.addToast(o,"success",s),error:(o,s=4e3)=>r.addToast(o,"error",s),info:(o,s=3e3)=>r.addToast(o,"info",s),warning:(o,s=3e3)=>r.addToast(o,"warning",s)}}export{e as u};

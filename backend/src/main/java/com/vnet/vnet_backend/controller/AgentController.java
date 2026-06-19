@@ -2,6 +2,7 @@ package com.vnet.vnet_backend.controller;
 
 import com.vnet.vnet_backend.entity.Agent;
 import com.vnet.vnet_backend.entity.AgentStatus;
+import com.vnet.vnet_backend.entity.Customer;
 import com.vnet.vnet_backend.repository.AgentRepository;
 import com.vnet.vnet_backend.repository.CustomerRepository;
 import com.vnet.vnet_backend.service.AnalyticsService;
@@ -47,6 +48,11 @@ public class AgentController {
     @GetMapping
     public ResponseEntity<List<Agent>> getAll() {
         return ResponseEntity.ok(agentRepository.findAll());
+    }
+
+    @GetMapping("/{id}/customers")
+    public ResponseEntity<List<Customer>> getAgentCustomers(@PathVariable Long id) {
+        return ResponseEntity.ok(customerRepository.findAllByAgentId(id));
     }
 
     @PostMapping

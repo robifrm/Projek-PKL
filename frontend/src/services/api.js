@@ -124,6 +124,10 @@ export function getAgentPerformanceByPeriod(period = "month") {
   return apiFetch(`/agents/performance?period=${encodeURIComponent(period)}`);
 }
 
+export function getAgentCustomers(agentId) {
+  return apiFetch(`/agents/${encodeURIComponent(agentId)}/customers`);
+}
+
 export function getAddressInsights() {
   return apiFetch("/addresses/insights");
 }

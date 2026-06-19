@@ -444,7 +444,7 @@
           </div>
           <div class="ac-footer">
             <span class="ac-joined">Joined {{ a.joined }}</span>
-            <button class="ac-view-btn">
+            <button class="ac-view-btn" @click="viewAgentDetail(a)">
               <span>Profile</span>
               <svg
                 viewBox="0 0 24 24"
@@ -737,7 +737,7 @@
               class="perf-row"
             >
               <td>
-                <div class="pa-cell">
+                <div class="pa-cell pa-cell--clickable" @click="viewAgentDetail(a)">
                   <div
                     class="logo-avatar pa-avatar"
                     :class="{ 'logo-avatar--image': hasLogo(a) }"
@@ -829,6 +829,12 @@
                       }"
                       v-if="activeActionMenu === a.name"
                     >
+                      <button
+                        class="action-dropdown-item"
+                        @click="viewAgentDetail(a)"
+                      >
+                        View Customers
+                      </button>
                       <button
                         class="action-dropdown-item"
                         @click="editAgent(a)"
@@ -1031,9 +1037,14 @@
           <button class="btn btn--danger" @click="executeConfirmDelete">Ya, Hapus</button>
         </div>
       </div>
-    </div>
-
-
+    </div>    <!-- Agent Detail Panel -->
+    <Teleport to="body">
+      <AgentDetailPanel
+        :visible="showDetailPanel"
+        :agent="selectedAgent"
+        @close="showDetailPanel = false"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -1054,6 +1065,7 @@ import {
   updateAgent,
   updateAgentStatus,
 } from "@/services/api";
+import AgentDetailPanel from "@/components/AgentDetailPanel.vue";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -1118,6 +1130,15 @@ if (typeof window !== "undefined") {
   window.addEventListener("click", () => {
     activeActionMenu.value = null;
   });
+}
+
+// Agent Detail Panel State
+const showDetailPanel = ref(false);
+const selectedAgent = ref(null);
+
+function viewAgentDetail(agent) {
+  selectedAgent.value = agent;
+  showDetailPanel.value = true;
 }
 
 // Modal State
@@ -2435,6 +2456,13 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+.pa-cell--clickable {
+  cursor: pointer;
+}
+.pa-cell--clickable:hover .pa-name {
+  color: var(--navy);
+  text-decoration: underline;
 }
 .pa-avatar {
   width: 32px;
