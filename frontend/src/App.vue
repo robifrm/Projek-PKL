@@ -18,31 +18,25 @@
 
     <!-- Global Logout Confirm Modal -->
     <div class="modal-backdrop" v-if="showLogoutModal" @click.self="showLogoutModal = false" style="z-index: 9999;">
-      <div class="modal-card card" style="max-width: 400px; border-top: 4px solid var(--red-warn);">
-        <div class="modal-header" style="padding: 18px 20px 10px 20px; border-bottom: none;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 30px; height: 30px; border-radius: 50%; background: rgba(231, 76, 60, 0.1); color: var(--red-warn); display: flex; align-items: center; justify-content: center;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; stroke-linecap: round; stroke-linejoin: round;">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-            </div>
-            <h2 class="chart-title" style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text-1);">Keluar dari Sistem</h2>
-          </div>
-          <button class="btn-icon" @click="showLogoutModal = false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+      <div class="confirm-dialog">
+        <div class="confirm-dialog__icon confirm-dialog__icon--logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
         </div>
-        <div class="modal-body" style="padding: 10px 20px 20px 20px; font-size: 13px; color: var(--text-2); line-height: 1.5;">
-          Apakah Anda yakin ingin keluar dari sistem? Anda harus masuk kembali untuk mengakses data.
+        <div class="confirm-dialog__body">
+          <h2 class="confirm-dialog__title">Keluar dari Sistem?</h2>
+          <p class="confirm-dialog__desc">Sesi Anda akan diakhiri dan Anda perlu login kembali untuk mengakses dashboard.</p>
         </div>
-        <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px;">
-          <button class="btn btn--ghost" @click="showLogoutModal = false" style="padding: 8px 16px;">Batal</button>
-          <button class="btn btn--primary" @click="confirmLogout" style="padding: 8px 16px; background: var(--red-warn); color: #fff; border: none; box-shadow: none;">Ya, Keluar</button>
+        <div class="confirm-dialog__actions">
+          <button class="confirm-dialog__btn confirm-dialog__btn--cancel" @click="showLogoutModal = false">Batal</button>
+          <button class="confirm-dialog__btn confirm-dialog__btn--danger" @click="confirmLogout">Ya, Keluar</button>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -203,4 +197,93 @@ onUnmounted(() => {
 @media (max-width: 640px) {
   .app-content { padding: 16px; background-image: none; }
 }
+
+/* ── Clean Confirm Dialog ─────────────────────────────── */
+.confirm-dialog {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 28px 24px;
+  gap: 16px;
+  animation: modalIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.confirm-dialog__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.confirm-dialog__icon svg {
+  width: 24px;
+  height: 24px;
+}
+.confirm-dialog__icon--logout {
+  background: rgba(231, 76, 60, 0.08);
+  color: var(--red-warn, #e74c3c);
+}
+.confirm-dialog__icon--delete {
+  background: rgba(231, 76, 60, 0.08);
+  color: var(--red-warn, #e74c3c);
+}
+.confirm-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.confirm-dialog__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-family: var(--font-display);
+  letter-spacing: -0.2px;
+}
+.confirm-dialog__desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+.confirm-dialog__name {
+  font-weight: 600;
+  color: var(--text-1);
+}
+.confirm-dialog__actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+.confirm-dialog__btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+  font-family: var(--font-display);
+  letter-spacing: 0.1px;
+}
+.confirm-dialog__btn:active { transform: scale(0.97); }
+.confirm-dialog__btn--cancel {
+  background: var(--surface-2, #f1f5f9);
+  color: var(--text-2);
+}
+.confirm-dialog__btn--cancel:hover { background: var(--border); }
+.confirm-dialog__btn--danger {
+  background: var(--red-warn, #e74c3c);
+  color: #fff;
+}
+.confirm-dialog__btn--danger:hover { opacity: 0.88; }
 </style>
