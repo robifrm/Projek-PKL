@@ -133,7 +133,7 @@
           <span class="badge-inline badge-inline--gold">{{ commissionDeltaDisplay }}</span>
           <span class="kpi-meta-text">vs periode lalu</span>
         </div>
-        <div class="kpi-note kpi-note--pending">⏳ Skema komisi belum dikonfirmasi</div>
+        <div class="kpi-note kpi-note--pending">🏢 Corporate: Revenue Sharing 50% dari harga paket · 👤 Individual: Skema komisi belum dikonfirmasi</div>
       </div>
     </div>
 
@@ -236,7 +236,7 @@
             <div class="ac-stat-divider"></div>
             <div class="ac-stat">
               <div class="ac-stat-val" style="color: var(--gold); font-size: 13px">{{ a.commission }}</div>
-              <div class="ac-stat-lbl">Commission</div>
+              <div class="ac-stat-lbl">{{ a.isCompany ? 'Rev. Sharing' : 'Commission' }}</div>
             </div>
           </div>
 
@@ -647,8 +647,15 @@ const agentChartOptions = computed(() => ({
     }
   },
   scales: {
-    x: { grid: { display: false }, border: { display: false }, ticks: { font: { family: "Inter", size: 11 }, color: isDark.value ? "#64748B" : "#9BA3BF" } },
+    x: { grid: { display: false }, border: { display: false }, ticks: { font: { family: "Inter", size: 11 }, color: isDark.value ? "#64748B" : "#9BA3BF" }, offset: true },
     y: { display: false, beginAtZero: true },
+  },
+  datasets: {
+    bar: {
+      maxBarThickness: 56,
+      barPercentage: 0.55,
+      categoryPercentage: 0.7,
+    }
   },
 }));
 

@@ -418,7 +418,9 @@ public class AnalyticsService {
             row.put("name", agent.getNama());
             row.put("short", shortName(agent.getNama()));
             row.put("initials", initials(agent.getNama()));
-            row.put("type", isCompany(agent.getNama()) ? "Corporate Partner" : "Individual Agent");
+            boolean isCorp = isCompany(agent.getNama());
+            row.put("type", isCorp ? "Corporate Partner" : "Individual Agent");
+            row.put("commissionScheme", isCorp ? "Revenue Sharing 50%" : "Belum ada skema");
             row.put("isCompany", isCompany(agent.getNama()));
             row.put("color", color(i));
             row.put("status", agentStatus(agent));
@@ -544,11 +546,20 @@ public class AnalyticsService {
     }
 
     private double commission(Agent agent, List<Customer> customers) {
+        // Jika ada komisi per-customer yang dikonfigurasikan manual, gunakan itu
         Double perCustomerCommission = agent.getKomisi();
         if (perCustomerCommission != null && perCustomerCommission > 0) {
             return perCustomerCommission * customers.size();
         }
-        return customers.stream().mapToDouble(this::customerProfit).sum();
+        // Corporate Agent: Revenue Sharing = 50% dari total harga paket
+        if (isCompany(agent.getNama())) {
+            return customers.stream()
+                    .filter(c -> c.getPkg() != null && c.getPkg().getPrice() != null)
+                    .mapToDouble(c -> c.getPkg().getPrice() * 0.50)
+                    .sum();
+        }
+        // Individual Agent: skema belum dikonfirmasi, return 0
+        return 0.0;
     }
 
     private String agentStatus(Agent agent) {

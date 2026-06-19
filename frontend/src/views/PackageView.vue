@@ -422,8 +422,20 @@ const revPkgOptions = {
     }
   },
   scales: {
-    x: { grid: { display: false }, border: { display: false }, ticks: { font: { family: "Inter", size: 10 }, color: "#9BA3BF" } },
-    y: { display: false },
+    x: {
+      grid: { display: false },
+      border: { display: false },
+      ticks: { font: { family: "Inter", size: 10 }, color: "#9BA3BF" },
+      offset: true,
+    },
+    y: { display: false, beginAtZero: true },
+  },
+  datasets: {
+    bar: {
+      maxBarThickness: 56,
+      barPercentage: 0.55,
+      categoryPercentage: 0.7,
+    }
   },
 };
 
@@ -433,8 +445,21 @@ const stackedBarOptions = {
     legend: { display: true, position: 'top', labels: { boxWidth: 10, usePointStyle: true, pointStyle: 'circle' } },
   },
   scales: {
-    x: { stacked: true, grid: { display: false }, border: { display: false }, ticks: { font: { family: "Inter", size: 10 }, color: "#9BA3BF" } },
-    y: { stacked: true, display: false },
+    x: {
+      stacked: true,
+      grid: { display: false },
+      border: { display: false },
+      ticks: { font: { family: "Inter", size: 10 }, color: "#9BA3BF" },
+      offset: true,
+    },
+    y: { stacked: true, display: false, beginAtZero: true },
+  },
+  datasets: {
+    bar: {
+      maxBarThickness: 56,
+      barPercentage: 0.55,
+      categoryPercentage: 0.7,
+    }
   },
 };
 

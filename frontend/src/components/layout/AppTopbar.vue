@@ -39,21 +39,39 @@
     </div>
 
     <div class="topbar__right">
-      <div class="status-pill premium-badge">
-        <span class="status-dot"></span>
-        <span class="status-text">LIVE SYNCING</span>
-      </div>
       <!-- Dark Mode Toggle -->
-      <button class="topbar__darkbtn" @click="toggleDark" :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
-        <svg v-if="isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      <button
+        class="topbar__darkbtn"
+        @click="toggleDark"
+        :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+      >
+        <svg
+          v-if="isDark"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+        >
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
         </svg>
-        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        <svg
+          v-else
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+        >
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
         </svg>
       </button>
       <div class="bell-container">
@@ -143,7 +161,7 @@ const route = useRoute();
 const router = useRouter();
 
 const searchVal = ref("");
-const isDark = ref(localStorage.getItem('vnet-theme') === 'dark');
+const isDark = ref(localStorage.getItem("vnet-theme") === "dark");
 const userInitials = ref("VA");
 const adminName = ref("Super Admin VNet");
 const adminEmail = ref("admin@victorynetwork.id");
@@ -185,8 +203,8 @@ watch(
 
 function toggleDark() {
   isDark.value = !isDark.value;
-  document.documentElement.classList.toggle('dark', isDark.value);
-  localStorage.setItem('vnet-theme', isDark.value ? 'dark' : 'light');
+  document.documentElement.classList.toggle("dark", isDark.value);
+  localStorage.setItem("vnet-theme", isDark.value ? "dark" : "light");
 }
 
 const toggleNotifications = () => {
@@ -201,8 +219,8 @@ const toggleProfile = () => {
 
 // ── Click-outside to close dropdowns ─────────────────────────────────────────
 function handleDocClick(e) {
-  const bellContainer = document.querySelector('.bell-container');
-  const profileContainer = document.querySelector('.profile-container');
+  const bellContainer = document.querySelector(".bell-container");
+  const profileContainer = document.querySelector(".profile-container");
   if (bellContainer && !bellContainer.contains(e.target)) {
     showNotifications.value = false;
   }
@@ -233,14 +251,14 @@ function loadUserProfile() {
 }
 
 onMounted(() => {
-  document.addEventListener('mousedown', handleDocClick);
-  window.addEventListener('vnet-user-updated', loadUserProfile);
+  document.addEventListener("mousedown", handleDocClick);
+  window.addEventListener("vnet-user-updated", loadUserProfile);
   loadUserProfile();
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', handleDocClick);
-  window.removeEventListener('vnet-user-updated', loadUserProfile);
+  document.removeEventListener("mousedown", handleDocClick);
+  window.removeEventListener("vnet-user-updated", loadUserProfile);
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -256,7 +274,7 @@ const goToNotification = (item) => {
 
 const logout = () => {
   showProfile.value = false;
-  window.dispatchEvent(new CustomEvent('request-logout'));
+  window.dispatchEvent(new CustomEvent("request-logout"));
 };
 
 async function loadNotifications() {
@@ -277,7 +295,7 @@ async function loadNotifications() {
           title: "System healthy",
           desc: "Customer data is synced.",
           to: "/customers",
-        }
+        },
       ];
       return;
     }
@@ -446,12 +464,15 @@ onMounted(() => {
 
 /* Dark Mode Toggle Button */
 .topbar__darkbtn {
-  width: 38px; height: 38px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--r-sm);
   border: 1px solid var(--border);
   background: var(--surface-2);
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-2);
   transition: all var(--transition-fast);
   flex-shrink: 0;
@@ -461,7 +482,10 @@ onMounted(() => {
   color: var(--navy);
   border-color: var(--navy-light);
 }
-.topbar__darkbtn svg { width: 16px; height: 16px; }
+.topbar__darkbtn svg {
+  width: 16px;
+  height: 16px;
+}
 
 /* Live status pill */
 .premium-badge {

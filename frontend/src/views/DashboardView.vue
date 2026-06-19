@@ -1336,10 +1336,19 @@ const revPkgOptions = computed(() => ({
         font: { family: "Inter", size: 10 },
         color: isDark.value ? "#64748B" : "#9BA3BF",
       },
+      offset: true,
     },
-    y: { display: false },
+    y: { display: false, beginAtZero: true },
+  },
+  datasets: {
+    bar: {
+      maxBarThickness: 56,
+      barPercentage: 0.55,
+      categoryPercentage: 0.7,
+    }
   },
 }));
+
 
 // Geographic Distribution Pie Chart
 const cityPieData = computed(() => ({

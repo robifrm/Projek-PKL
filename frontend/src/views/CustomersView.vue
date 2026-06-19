@@ -237,32 +237,34 @@
                 style="fill: none; stroke: var(--border); stroke-width: 14"
               />
               <circle
+                v-if="statusDist.activePct > 0"
                 class="donut-active"
                 cx="60"
                 cy="60"
                 r="48"
                 :stroke-dasharray="`${statusDist.activePct * 3.016} ${301.6}`"
                 stroke-dashoffset="0"
-                style="
-                  fill: none;
-                  stroke: var(--teal);
-                  stroke-width: 14;
-                  stroke-linecap: round;
-                "
+                :style="{
+                  fill: 'none',
+                  stroke: 'var(--teal)',
+                  strokeWidth: 14,
+                  strokeLinecap: statusDist.activePct >= 100 ? 'butt' : 'round',
+                }"
               />
               <circle
+                v-if="statusDist.isolirPct > 0"
                 class="donut-isolir"
                 cx="60"
                 cy="60"
                 r="48"
                 :stroke-dasharray="`${statusDist.isolirPct * 3.016} ${301.6}`"
                 :stroke-dashoffset="`${-(statusDist.activePct * 3.016)}`"
-                style="
-                  fill: none;
-                  stroke: var(--gold);
-                  stroke-width: 14;
-                  stroke-linecap: round;
-                "
+                :style="{
+                  fill: 'none',
+                  stroke: 'var(--gold)',
+                  strokeWidth: 14,
+                  strokeLinecap: statusDist.isolirPct >= 100 ? 'butt' : 'round',
+                }"
               />
             </g>
             <text
