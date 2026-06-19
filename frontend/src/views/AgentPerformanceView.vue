@@ -486,7 +486,7 @@
         <div>
           <div class="chart-title">Performance List</div>
           <div class="chart-sub">
-            Detailed breakdown of rate, commission, and growth
+            Detailed breakdown of rate and commission
           </div>
         </div>
         <div class="table-tabs-row">
@@ -503,13 +503,6 @@
             @click="activeTableTab = 'top5'"
           >
             Top 5
-          </button>
-          <button
-            class="ctab"
-            :class="{ 'ctab--active': activeTableTab === 'under' }"
-            @click="activeTableTab = 'under'"
-          >
-            Under Target
           </button>
         </div>
       </div>
@@ -721,39 +714,7 @@
                   </svg>
                 </span>
               </th>
-              <th class="th-sort" @click="toggleAgentSort('growth')">
-                Growth
-                <span class="sort-icon">
-                  <svg
-                    v-if="agentSortKey === 'growth'"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                  >
-                    <polyline
-                      :points="
-                        agentSortDir === 'asc'
-                          ? '18 15 12 9 6 15'
-                          : '6 9 12 15 18 9'
-                      "
-                    />
-                  </svg>
-                  <svg
-                    v-else
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    opacity="0.35"
-                  >
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <polyline points="19 12 12 19 5 12" />
-                  </svg>
-                </span>
-              </th>
+
               <th>Status</th>
               <th class="th-center">Action</th>
             </tr>
@@ -825,14 +786,7 @@
                 </div>
               </td>
               <td class="td-commission td-right">{{ a.commission }}</td>
-              <td>
-                <span
-                  class="growth-tag"
-                  :class="a.growth > 0 ? 'growth-tag--up' : 'growth-tag--down'"
-                >
-                  {{ a.growth > 0 ? "+" : "" }}{{ a.growth }}%
-                </span>
-              </td>
+
               <td>
                 <span
                   class="badge"
@@ -1349,16 +1303,13 @@ const filteredTableAgents = computed(() => {
     list.sort((a, b) => b.customers - a.customers);
     return list.slice(0, 5);
   }
-  if (activeTableTab.value === "under") {
-    list = list.filter((a) => a.status === "PENDING" || a.customers < 50);
-  }
   // Apply sort
   if (agentSortKey.value) {
     list.sort((a, b) => {
       let av = a[agentSortKey.value];
       let bv = b[agentSortKey.value];
       if (
-        ["customers", "active", "growth", "isolirRate"].includes(
+        ["customers", "active", "isolirRate"].includes(
           agentSortKey.value,
         )
       ) {
@@ -1387,9 +1338,6 @@ const totalTableAgents = computed(() => {
         a.name?.toLowerCase().includes(q) || a.type?.toLowerCase().includes(q),
     );
   }
-  if (activeTableTab.value === "under")
-    return list.filter((a) => a.status === "PENDING" || a.customers < 50)
-      .length;
   if (activeTableTab.value === "top5") return Math.min(5, list.length);
   return list.length;
 });
@@ -2549,21 +2497,7 @@ onUnmounted(() => {
   color: var(--green-ok);
   font-size: 13px;
 }
-.growth-tag {
-  font-size: 11px;
-  font-weight: 700;
-  font-family: var(--font-display);
-  padding: 4px 8px;
-  border-radius: 99px;
-}
-.growth-tag--up {
-  background: #e8f8ef;
-  color: var(--green-ok);
-}
-.growth-tag--down {
-  background: #fdeceb;
-  color: var(--red-warn);
-}
+
 .badge {
   font-size: 10px;
   font-weight: 700;

@@ -435,7 +435,6 @@ public class AnalyticsService {
             row.put("commission", compactCurrency(commission));
             row.put("commissionText", formatCurrency(commission));
             row.put("progress", Math.min(100, percent(periodTotal, 200)));
-            row.put("growth", growthPct(periodTotal, previousCustomers.size()));
             row.put("joined", "-");
             rows.add(row);
         }

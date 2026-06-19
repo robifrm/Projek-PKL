@@ -204,17 +204,19 @@ class CustomerServiceTest {
     @Test
     @DisplayName("deleteCustomer() berhasil jika ID ada")
     void deleteCustomer_existingId_shouldDelete() {
-        when(customerRepository.existsById(1L)).thenReturn(true);
+        Customer c = new Customer();
+        c.setId(1L);
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(c));
 
         customerService.deleteCustomer(1L);
 
-        verify(customerRepository).deleteById(1L);
+        verify(customerRepository).delete(c);
     }
 
     @Test
     @DisplayName("deleteCustomer() harus throw jika ID tidak ada")
     void deleteCustomer_notFound_shouldThrow() {
-        when(customerRepository.existsById(99L)).thenReturn(false);
+        when(customerRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> customerService.deleteCustomer(99L))
                 .isInstanceOf(RuntimeException.class)
