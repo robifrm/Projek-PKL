@@ -1053,30 +1053,32 @@
       @click.self="showConfirmModal = false"
       style="z-index: 110"
     >
-      <div class="confirm-dialog">
-        <div class="confirm-dialog__icon confirm-dialog__icon--delete">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6"/>
-            <path d="M14 11v6"/>
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
+      <div class="compact-modal-card delete-modal-card">
+        <div class="delete-modal-icon-wrap">
+          <div class="delete-modal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+            </svg>
+          </div>
         </div>
-        <div class="confirm-dialog__body">
-          <h2 class="confirm-dialog__title">Hapus Agen?</h2>
-          <p class="confirm-dialog__desc">
+        <div class="delete-modal-body">
+          <div class="delete-modal-title">Hapus Agen</div>
+          <div class="delete-modal-desc">
             Anda akan menghapus agen
-            <span class="confirm-dialog__name">{{ selectedAgentForDelete?.name }}</span>.
-            Tindakan ini tidak dapat dibatalkan.
-          </p>
+            <strong>{{ selectedAgentForDelete?.name }}</strong>.
+            Tindakan ini permanen dan tidak dapat dibatalkan.
+          </div>
         </div>
-        <div class="confirm-dialog__actions">
-          <button class="confirm-dialog__btn confirm-dialog__btn--cancel" @click="showConfirmModal = false">Batal</button>
-          <button class="confirm-dialog__btn confirm-dialog__btn--danger" @click="executeConfirmDelete">Ya, Hapus</button>
+        <div class="delete-modal-footer">
+          <button class="btn btn--secondary" @click="showConfirmModal = false">Batal</button>
+          <button class="btn btn--danger" @click="executeConfirmDelete">Ya, Hapus</button>
         </div>
       </div>
     </div>
+
 
   </div>
 </template>
@@ -2828,5 +2830,68 @@ onUnmounted(() => {
   color: var(--gold);
   font-style: normal;
   font-weight: 500;
+}
+
+/* ── Delete Modal (same as PackageView) ── */
+.compact-modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: var(--r-md);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
+  animation: popIn 0.2s ease-out;
+}
+@keyframes popIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.delete-modal-card {
+  max-width: 400px;
+  text-align: center;
+  padding: 0;
+}
+.delete-modal-icon-wrap {
+  padding: 28px 20px 16px;
+  display: flex;
+  justify-content: center;
+}
+.delete-modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #FEF2F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+}
+.delete-modal-body {
+  padding: 0 24px 20px;
+}
+.delete-modal-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 8px;
+}
+.delete-modal-desc {
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+.delete-modal-desc strong {
+  color: var(--text-1);
+}
+.delete-modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.delete-modal-footer .btn {
+  min-width: 110px;
 }
 </style>
