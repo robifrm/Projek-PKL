@@ -70,6 +70,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/import/stats").hasAnyRole("SUPER_ADMIN", "STAFF")
                 .requestMatchers("/api/import/**").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/agents/performance").hasAnyRole("SUPER_ADMIN", "STAFF")
+                .requestMatchers(HttpMethod.GET, "/api/agents/*/customers").hasAnyRole("SUPER_ADMIN", "STAFF")
                 .requestMatchers("/api/agents/**").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/addresses/insights").hasAnyRole("SUPER_ADMIN", "STAFF", "AGENT")
                 .requestMatchers(HttpMethod.GET, "/api/system-config").hasAnyRole("SUPER_ADMIN", "STAFF")
