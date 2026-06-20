@@ -85,7 +85,7 @@
                 class="form-input"
                 v-model="profile.role"
                 disabled
-                style="opacity: 0.7; cursor: not-allowed; background: var(--bg);"
+                style="opacity: 0.7; cursor: not-allowed; background: var(--bg)"
               />
             </div>
           </div>
@@ -163,16 +163,6 @@
               </label>
             </div>
           </div>
-
-          <!-- Engine Status -->
-          <div class="engine-status">
-            <div class="es-dot"></div>
-            <div class="es-info">
-              <div class="es-label">Sync Engine</div>
-              <div class="es-val">Operational - Last sync 2 min ago</div>
-            </div>
-            <span class="badge badge--green">99.8% Uptime</span>
-          </div>
         </div>
 
         <!-- Notifications -->
@@ -204,20 +194,7 @@
             </div>
           </div>
 
-          <div class="section-title" style="margin-top: 24px">
-            Notification Channels
-          </div>
-          <div class="channel-grid">
-            <div class="channel-card" v-for="c in channels" :key="c.label">
-              <div class="channel-icon"><component :is="c.icon" /></div>
-              <div class="channel-label">{{ c.label }}</div>
-              <label class="toggle"
-                ><input type="checkbox" v-model="c.enabled" /><span
-                  class="toggle-track"
-                ></span
-              ></label>
-            </div>
-          </div>
+
         </div>
 
         <!-- Security -->
@@ -227,7 +204,7 @@
         >
           <div class="section-title">Security & Access</div>
           <div class="section-sub">
-            Manage passwords, two-factor authentication, and active sessions.
+            Manage passwords and active sessions.
           </div>
 
           <div class="sec-block">
@@ -260,30 +237,17 @@
                   placeholder="********"
                 />
               </div>
-              <button class="btn btn--primary" style="width: fit-content" @click="changePassword">
+              <button
+                class="btn btn--primary"
+                style="width: fit-content"
+                @click="changePassword"
+              >
                 Update Password
               </button>
             </div>
           </div>
 
-          <div class="sec-block">
-            <div class="sec-block-title">Two-Factor Authentication</div>
-            <div class="tfa-row">
-              <div>
-                <div class="tfa-label">Authenticator App</div>
-                <div class="tfa-desc">
-                  {{ is2FAEnabled ? 'Two-factor authentication is active.' : 'Use Google Authenticator or similar to generate codes.' }}
-                </div>
-              </div>
-              <button 
-                class="btn-sm" 
-                :class="is2FAEnabled ? 'btn-sm--danger' : 'btn-sm--primary'"
-                @click="toggle2FA"
-              >
-                {{ is2FAEnabled ? 'Disable 2FA' : 'Enable 2FA' }}
-              </button>
-            </div>
-          </div>
+
 
           <div class="sec-block">
             <div class="sec-block-title">Active Sessions</div>
@@ -305,7 +269,11 @@
                   </div>
                   <div class="session-meta">{{ s.ip }} - {{ s.time }}</div>
                 </div>
-                <button v-if="!s.current" class="btn-sm btn-sm--danger" @click="revokeSession(s)">
+                <button
+                  v-if="!s.current"
+                  class="btn-sm btn-sm--danger"
+                  @click="revokeSession(s)"
+                >
                   Revoke
                 </button>
               </div>
@@ -324,7 +292,10 @@
             <div class="form-group">
               <label class="form-label">Language</label>
               <div class="select-wrap">
-                <select class="form-input" v-model="displayPreferences.language">
+                <select
+                  class="form-input"
+                  v-model="displayPreferences.language"
+                >
                   <option>Bahasa Indonesia</option>
                   <option>English</option>
                 </select>
@@ -333,7 +304,10 @@
             <div class="form-group">
               <label class="form-label">Timezone</label>
               <div class="select-wrap">
-                <select class="form-input" v-model="displayPreferences.timezone">
+                <select
+                  class="form-input"
+                  v-model="displayPreferences.timezone"
+                >
                   <option>Asia/Jakarta (WIB, UTC+7)</option>
                   <option>Asia/Singapore</option>
                 </select>
@@ -342,7 +316,10 @@
             <div class="form-group">
               <label class="form-label">Date Format</label>
               <div class="select-wrap">
-                <select class="form-input" v-model="displayPreferences.dateFormat">
+                <select
+                  class="form-input"
+                  v-model="displayPreferences.dateFormat"
+                >
                   <option>DD/MM/YYYY</option>
                   <option>MM/DD/YYYY</option>
                   <option>YYYY-MM-DD</option>
@@ -352,7 +329,10 @@
             <div class="form-group">
               <label class="form-label">Currency Display</label>
               <div class="select-wrap">
-                <select class="form-input" v-model="displayPreferences.currency">
+                <select
+                  class="form-input"
+                  v-model="displayPreferences.currency"
+                >
                   <option>Rupiah (Rp)</option>
                   <option>USD ($)</option>
                 </select>
@@ -361,37 +341,93 @@
           </div>
 
           <div class="theme-section">
-            <div class="form-label" style="margin-bottom: 12px">Table Row Density</div>
+            <div class="form-label" style="margin-bottom: 12px">
+              Table Row Density
+            </div>
             <div class="density-row">
-              <button 
-                class="density-btn" 
-                :class="{ 'density-btn--active': displayPreferences.rowDensity === 'comfortable' }"
+              <button
+                class="density-btn"
+                :class="{
+                  'density-btn--active':
+                    displayPreferences.rowDensity === 'comfortable',
+                }"
                 @click="displayPreferences.rowDensity = 'comfortable'"
-              >Comfortable</button>
-              <button 
-                class="density-btn" 
-                :class="{ 'density-btn--active': displayPreferences.rowDensity === 'compact' }"
+              >
+                Comfortable
+              </button>
+              <button
+                class="density-btn"
+                :class="{
+                  'density-btn--active':
+                    displayPreferences.rowDensity === 'compact',
+                }"
                 @click="displayPreferences.rowDensity = 'compact'"
-              >Compact</button>
-              <button 
-                class="density-btn" 
-                :class="{ 'density-btn--active': displayPreferences.rowDensity === 'spacious' }"
+              >
+                Compact
+              </button>
+              <button
+                class="density-btn"
+                :class="{
+                  'density-btn--active':
+                    displayPreferences.rowDensity === 'spacious',
+                }"
                 @click="displayPreferences.rowDensity = 'spacious'"
-              >Spacious</button>
+              >
+                Spacious
+              </button>
             </div>
           </div>
 
           <div class="theme-section">
-            <div class="form-label" style="margin-bottom: 10px">Appearance Mode</div>
+            <div class="form-label" style="margin-bottom: 10px">
+              Appearance Mode
+            </div>
             <div class="dark-mode-card">
               <div class="dark-mode-info">
-                <div class="dark-mode-icon" :class="isDark ? 'dark-mode-icon--dark' : 'dark-mode-icon--light'">
-                  <svg v-if="isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                <div
+                  class="dark-mode-icon"
+                  :class="
+                    isDark ? 'dark-mode-icon--dark' : 'dark-mode-icon--light'
+                  "
+                >
+                  <svg
+                    v-if="isDark"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  >
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                  </svg>
+                  <svg
+                    v-else
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  >
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                  </svg>
                 </div>
                 <div>
-                  <div class="dark-mode-label">{{ isDark ? 'Dark Mode' : 'Light Mode' }}</div>
-                  <div class="dark-mode-desc">{{ isDark ? 'Dark color scheme is active' : 'Light color scheme is active' }}</div>
+                  <div class="dark-mode-label">
+                    {{ isDark ? "Dark Mode" : "Light Mode" }}
+                  </div>
+                  <div class="dark-mode-desc">
+                    {{
+                      isDark
+                        ? "Dark color scheme is active"
+                        : "Light color scheme is active"
+                    }}
+                  </div>
                 </div>
               </div>
               <label class="toggle">
@@ -410,60 +446,200 @@
           </div>
 
           <!-- Topbar action: Add User -->
-          <div class="user-management-actions" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+          <div
+            class="user-management-actions"
+            style="
+              margin-bottom: 20px;
+              display: flex;
+              justify-content: flex-end;
+            "
+          >
             <button class="btn btn--primary" @click="openAddUserModal">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="margin-right: 6px;">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="8.5" cy="7" r="4"/>
-                <line x1="20" y1="8" x2="20" y2="14"/>
-                <line x1="23" y1="11" x2="17" y2="11"/>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                width="16"
+                height="16"
+                style="margin-right: 6px"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="8.5" cy="7" r="4" />
+                <line x1="20" y1="8" x2="20" y2="14" />
+                <line x1="23" y1="11" x2="17" y2="11" />
               </svg>
               Tambah User Baru
             </button>
           </div>
 
           <!-- User Table -->
-          <div class="users-table-wrapper" style="overflow-x: auto; width: 100%;">
-            <table class="users-table" style="width: 100%; border-collapse: collapse; min-width: 600px;">
+          <div
+            class="users-table-wrapper"
+            style="overflow-x: auto; width: 100%"
+          >
+            <table
+              class="users-table"
+              style="width: 100%; border-collapse: collapse; min-width: 600px"
+            >
               <thead>
-                <tr style="border-bottom: 1px solid var(--border); text-align: left;">
-                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2);">NAMA</th>
-                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2);">USERNAME</th>
-                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2);">ROLE</th>
-                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2);">ASSOCIATED AGENT</th>
-                  <th style="padding: 12px 8px; font-weight: 600; font-size: 13px; color: var(--text-2); text-align: right;">AKSI</th>
+                <tr
+                  style="
+                    border-bottom: 1px solid var(--border);
+                    text-align: left;
+                  "
+                >
+                  <th
+                    style="
+                      padding: 12px 8px;
+                      font-weight: 600;
+                      font-size: 13px;
+                      color: var(--text-2);
+                    "
+                  >
+                    NAMA
+                  </th>
+                  <th
+                    style="
+                      padding: 12px 8px;
+                      font-weight: 600;
+                      font-size: 13px;
+                      color: var(--text-2);
+                    "
+                  >
+                    USERNAME
+                  </th>
+                  <th
+                    style="
+                      padding: 12px 8px;
+                      font-weight: 600;
+                      font-size: 13px;
+                      color: var(--text-2);
+                    "
+                  >
+                    ROLE
+                  </th>
+                  <th
+                    style="
+                      padding: 12px 8px;
+                      font-weight: 600;
+                      font-size: 13px;
+                      color: var(--text-2);
+                    "
+                  >
+                    ASSOCIATED AGENT
+                  </th>
+                  <th
+                    style="
+                      padding: 12px 8px;
+                      font-weight: 600;
+                      font-size: 13px;
+                      color: var(--text-2);
+                      text-align: right;
+                    "
+                  >
+                    AKSI
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="u in usersList" :key="u.id" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                  <td style="padding: 12px 8px; font-size: 13px; font-weight: 500; color: var(--text-1);">{{ u.name }}</td>
-                  <td style="padding: 12px 8px; font-size: 13px; color: var(--text-3);">@{{ u.username }}</td>
-                  <td style="padding: 12px 8px; font-size: 13px;">
-                    <span :class="getRoleClass(u.role)" style="padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                <tr
+                  v-for="u in usersList"
+                  :key="u.id"
+                  style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)"
+                >
+                  <td
+                    style="
+                      padding: 12px 8px;
+                      font-size: 13px;
+                      font-weight: 500;
+                      color: var(--text-1);
+                    "
+                  >
+                    {{ u.name }}
+                  </td>
+                  <td
+                    style="
+                      padding: 12px 8px;
+                      font-size: 13px;
+                      color: var(--text-3);
+                    "
+                  >
+                    @{{ u.username }}
+                  </td>
+                  <td style="padding: 12px 8px; font-size: 13px">
+                    <span
+                      :class="getRoleClass(u.role)"
+                      style="
+                        padding: 3px 8px;
+                        border-radius: 4px;
+                        font-size: 11px;
+                        font-weight: 600;
+                      "
+                    >
                       {{ u.role }}
                     </span>
                   </td>
-                  <td style="padding: 12px 8px; font-size: 13px; color: var(--text-2);">
-                    {{ u.agent ? u.agent.nama : '-' }}
+                  <td
+                    style="
+                      padding: 12px 8px;
+                      font-size: 13px;
+                      color: var(--text-2);
+                    "
+                  >
+                    {{ u.agent ? u.agent.nama : "-" }}
                   </td>
-                  <td style="padding: 12px 8px; font-size: 13px; text-align: right;">
-                    <button 
-                      class="btn-delete-user" 
-                      @click="requestDeleteUser(u)" 
+                  <td
+                    style="
+                      padding: 12px 8px;
+                      font-size: 13px;
+                      text-align: right;
+                    "
+                  >
+                    <button
+                      class="btn-delete-user"
+                      @click="requestDeleteUser(u)"
                       :disabled="u.username === profile.username"
-                      style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px; font-size: 12px; font-weight: 500;"
+                      style="
+                        background: none;
+                        border: none;
+                        color: #ef4444;
+                        cursor: pointer;
+                        padding: 4px 8px;
+                        font-size: 12px;
+                        font-weight: 500;
+                      "
                     >
                       Hapus
                     </button>
                   </td>
                 </tr>
                 <tr v-if="loadError">
-                  <td colspan="5" style="text-align: center; padding: 20px; color: #ef4444; font-size: 13px; font-weight: 500;">
+                  <td
+                    colspan="5"
+                    style="
+                      text-align: center;
+                      padding: 20px;
+                      color: #ef4444;
+                      font-size: 13px;
+                      font-weight: 500;
+                    "
+                  >
                     {{ loadError }}
                   </td>
                 </tr>
                 <tr v-else-if="usersList.length === 0">
-                  <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-3); font-size: 13px;">
+                  <td
+                    colspan="5"
+                    style="
+                      text-align: center;
+                      padding: 20px;
+                      color: var(--text-3);
+                      font-size: 13px;
+                    "
+                  >
                     Tidak ada data user.
                   </td>
                 </tr>
@@ -476,84 +652,43 @@
 
     <!-- Save Toast -->
     <div class="save-toast" :class="{ 'save-toast--show': saved }">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
       Settings saved successfully!
     </div>
 
-    <!-- 2FA Modal -->
-    <div class="modal-overlay" v-if="show2FAModal" @click.self="show2FAModal = false">
-      <div class="modal-card card">
-        <div class="modal-header">
-          <div class="modal-title">Enable Two-Factor Authentication</div>
-          <button class="modal-close" @click="show2FAModal = false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p class="modal-desc">
-            Amankan akun Anda dengan mengaktifkan otentikasi dua faktor (2FA). Silakan ikuti langkah-langkah di bawah ini:
-          </p>
-          <div class="tfa-steps">
-            <div class="tfa-step">
-              <span class="step-num">1</span>
-              <span>Pindai kode QR di bawah ini menggunakan Google Authenticator atau aplikasi sejenis:</span>
-            </div>
-            <div class="qr-container">
-              <div class="simulated-qr">
-                <svg viewBox="0 0 100 100" class="qr-svg">
-                  <rect x="0" y="0" width="30" height="30" fill="currentColor"/>
-                  <rect x="5" y="5" width="20" height="20" fill="white"/>
-                  <rect x="10" y="10" width="10" height="10" fill="currentColor"/>
-                  <rect x="70" y="0" width="30" height="30" fill="currentColor"/>
-                  <rect x="75" y="5" width="20" height="20" fill="white"/>
-                  <rect x="80" y="10" width="10" height="10" fill="currentColor"/>
-                  <rect x="0" y="70" width="30" height="30" fill="currentColor"/>
-                  <rect x="5" y="75" width="20" height="20" fill="white"/>
-                  <rect x="10" y="80" width="10" height="10" fill="currentColor"/>
-                  <rect x="35" y="5" width="10" height="10" fill="currentColor"/>
-                  <rect x="50" y="15" width="5" height="15" fill="currentColor"/>
-                  <rect x="40" y="25" width="15" height="10" fill="currentColor"/>
-                  <rect x="10" y="45" width="15" height="5" fill="currentColor"/>
-                  <rect x="25" y="35" width="10" height="20" fill="currentColor"/>
-                  <rect x="35" y="70" width="15" height="15" fill="currentColor"/>
-                  <rect x="55" y="75" width="10" height="10" fill="currentColor"/>
-                  <rect x="70" y="45" width="15" height="15" fill="currentColor"/>
-                  <rect x="85" y="35" width="10" height="20" fill="currentColor"/>
-                  <rect x="75" y="80" width="15" height="15" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="qr-secret">Secret Key: <code>VNET AUTH 2026 KEY</code></div>
-            </div>
-            <div class="tfa-step">
-              <span class="step-num">2</span>
-              <span>Masukkan 6 digit kode yang muncul di aplikasi Anda:</span>
-            </div>
-            <div class="tfa-input-row">
-              <input 
-                type="text" 
-                class="form-input code-input" 
-                placeholder="000000" 
-                maxLength="6" 
-                v-model="tfaCode" 
-              />
-              <button class="btn btn--primary" @click="confirm2FA">Verify & Activate</button>
-            </div>
-            <div class="tfa-error" v-if="tfaError">{{ tfaError }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+
   </div>
 
   <!-- Revoke Session Confirm Modal -->
   <Teleport to="body">
-    <div class="revoke-modal-backdrop" v-if="showRevokeModal" @click.self="cancelRevoke">
+    <div
+      class="revoke-modal-backdrop"
+      v-if="showRevokeModal"
+      @click.self="cancelRevoke"
+    >
       <div class="revoke-modal-card">
         <div class="revoke-modal-icon-wrap">
           <div class="revoke-modal-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              width="26"
+              height="26"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
             </svg>
           </div>
         </div>
@@ -561,14 +696,20 @@
           <div class="revoke-modal-title">Keluarkan Sesi</div>
           <div class="revoke-modal-desc">
             Anda akan mengeluarkan sesi aktif di
-            <strong>{{ revokeTarget?.device }}</strong>.
-            Perangkat tersebut akan logout otomatis.
+            <strong>{{ revokeTarget?.device }}</strong
+            >. Perangkat tersebut akan logout otomatis.
           </div>
         </div>
         <div class="revoke-modal-footer">
-          <button class="btn-sm btn-sm--ghost" @click="cancelRevoke">Batal</button>
-          <button class="btn-sm btn-sm--danger" @click="confirmRevoke" :disabled="loadingRevoke">
-            {{ loadingRevoke ? 'Memproses...' : 'Ya, Keluarkan' }}
+          <button class="btn-sm btn-sm--ghost" @click="cancelRevoke">
+            Batal
+          </button>
+          <button
+            class="btn-sm btn-sm--danger"
+            @click="confirmRevoke"
+            :disabled="loadingRevoke"
+          >
+            {{ loadingRevoke ? "Memproses..." : "Ya, Keluarkan" }}
           </button>
         </div>
       </div>
@@ -577,55 +718,220 @@
 
   <!-- Add User Modal -->
   <Teleport to="body">
-    <div class="user-modal-backdrop" v-if="showAddUserModal" @click.self="closeAddUserModal">
+    <div
+      class="user-modal-backdrop"
+      v-if="showAddUserModal"
+      @click.self="closeAddUserModal"
+    >
       <div class="user-modal-card">
         <div class="user-modal-header">
           <div class="user-modal-title">Tambah User Baru</div>
-          <button class="user-modal-close" @click="closeAddUserModal">&times;</button>
+          <button class="user-modal-close" @click="closeAddUserModal">
+            &times;
+          </button>
         </div>
         <form @submit.prevent="submitAddUser" class="user-modal-form">
-          <div class="form-group" style="margin-bottom: 12px; text-align: left;">
-            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Nama Lengkap</label>
-            <input type="text" v-model="newUserForm.name" class="form-input" placeholder="Masukkan nama lengkap" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-1);" />
+          <div class="form-group" style="margin-bottom: 12px; text-align: left">
+            <label
+              class="form-label"
+              style="
+                font-weight: 500;
+                font-size: 13px;
+                display: block;
+                margin-bottom: 5px;
+              "
+              >Nama Lengkap</label
+            >
+            <input
+              type="text"
+              v-model="newUserForm.name"
+              class="form-input"
+              placeholder="Masukkan nama lengkap"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: transparent;
+                color: var(--text-1);
+              "
+            />
           </div>
-          <div class="form-group" style="margin-bottom: 12px; text-align: left;">
-            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Username</label>
-            <input type="text" v-model="newUserForm.username" class="form-input" placeholder="Masukkan username" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-1);" />
+          <div class="form-group" style="margin-bottom: 12px; text-align: left">
+            <label
+              class="form-label"
+              style="
+                font-weight: 500;
+                font-size: 13px;
+                display: block;
+                margin-bottom: 5px;
+              "
+              >Username</label
+            >
+            <input
+              type="text"
+              v-model="newUserForm.username"
+              class="form-input"
+              placeholder="Masukkan username"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: transparent;
+                color: var(--text-1);
+              "
+            />
           </div>
-          <div class="form-group" style="margin-bottom: 12px; text-align: left;">
-            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Password</label>
-            <input type="password" v-model="newUserForm.password" class="form-input" placeholder="Minimal 6 karakter" required minlength="6" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-1);" />
+          <div class="form-group" style="margin-bottom: 12px; text-align: left">
+            <label
+              class="form-label"
+              style="
+                font-weight: 500;
+                font-size: 13px;
+                display: block;
+                margin-bottom: 5px;
+              "
+              >Password</label
+            >
+            <input
+              type="password"
+              v-model="newUserForm.password"
+              class="form-input"
+              placeholder="Minimal 6 karakter"
+              required
+              minlength="6"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: transparent;
+                color: var(--text-1);
+              "
+            />
           </div>
-          <div class="form-group" style="margin-bottom: 12px; text-align: left;">
-            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Role</label>
-            <select v-model="newUserForm.role" class="form-input" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-1);">
+          <div class="form-group" style="margin-bottom: 12px; text-align: left">
+            <label
+              class="form-label"
+              style="
+                font-weight: 500;
+                font-size: 13px;
+                display: block;
+                margin-bottom: 5px;
+              "
+              >Role</label
+            >
+            <select
+              v-model="newUserForm.role"
+              class="form-input"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: var(--card-bg);
+                color: var(--text-1);
+              "
+            >
               <option value="SUPER_ADMIN">SUPER_ADMIN</option>
               <option value="STAFF">STAFF</option>
               <option value="AGENT">AGENT</option>
             </select>
           </div>
-          <div class="form-group" style="margin-bottom: 12px; text-align: left;" v-if="newUserForm.role === 'AGENT'">
-            <label class="form-label" style="font-weight: 500; font-size: 13px; display: block; margin-bottom: 5px;">Pilih Agen</label>
-            <select v-model="newUserForm.agentId" class="form-input" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-1);">
-              <option value="" disabled>-- {{ loadError ? 'Gagal memuat agen' : 'Pilih Agen' }} --</option>
+          <div
+            class="form-group"
+            style="margin-bottom: 12px; text-align: left"
+            v-if="newUserForm.role === 'AGENT'"
+          >
+            <label
+              class="form-label"
+              style="
+                font-weight: 500;
+                font-size: 13px;
+                display: block;
+                margin-bottom: 5px;
+              "
+              >Pilih Agen</label
+            >
+            <select
+              v-model="newUserForm.agentId"
+              class="form-input"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: var(--card-bg);
+                color: var(--text-1);
+              "
+            >
+              <option value="" disabled>
+                -- {{ loadError ? "Gagal memuat agen" : "Pilih Agen" }} --
+              </option>
               <option v-for="ag in agentsList" :key="ag.id" :value="ag.id">
                 {{ ag.nama }}
               </option>
             </select>
           </div>
 
-          <div class="user-modal-error" v-if="loadError" style="color: #ef4444; margin-top: 10px; font-size: 13px; text-align: left;">
+          <div
+            class="user-modal-error"
+            v-if="loadError"
+            style="
+              color: #ef4444;
+              margin-top: 10px;
+              font-size: 13px;
+              text-align: left;
+            "
+          >
             {{ loadError }}
           </div>
 
-          <div class="user-modal-error" v-if="addUserError" style="color: #ef4444; margin-top: 10px; font-size: 13px; text-align: left;">
+          <div
+            class="user-modal-error"
+            v-if="addUserError"
+            style="
+              color: #ef4444;
+              margin-top: 10px;
+              font-size: 13px;
+              text-align: left;
+            "
+          >
             {{ addUserError }}
           </div>
 
-          <div class="user-modal-footer" style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
-            <button type="button" class="btn btn--secondary" @click="closeAddUserModal" style="background: none; border: 1px solid var(--border); color: var(--text-2);">Batal</button>
-            <button type="submit" class="btn btn--primary" :disabled="submittingUser">
-              {{ submittingUser ? 'Menyimpan...' : 'Simpan User' }}
+          <div
+            class="user-modal-footer"
+            style="
+              margin-top: 18px;
+              display: flex;
+              justify-content: flex-end;
+              gap: 8px;
+            "
+          >
+            <button
+              type="button"
+              class="btn btn--secondary"
+              @click="closeAddUserModal"
+              style="
+                background: none;
+                border: 1px solid var(--border);
+                color: var(--text-2);
+              "
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              class="btn btn--primary"
+              :disabled="submittingUser"
+            >
+              {{ submittingUser ? "Menyimpan..." : "Simpan User" }}
             </button>
           </div>
         </form>
@@ -635,29 +941,116 @@
 
   <!-- Delete User Confirm Modal -->
   <Teleport to="body">
-    <div class="revoke-modal-backdrop" v-if="showDeleteUserModal" @click.self="cancelDeleteUser">
+    <div
+      class="revoke-modal-backdrop"
+      v-if="showDeleteUserModal"
+      @click.self="cancelDeleteUser"
+    >
       <div class="revoke-modal-card">
-        <div class="revoke-modal-icon-wrap" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 28px 20px 14px; display: flex; justify-content: center;">
-          <div class="revoke-modal-icon" style="width: 60px; height: 60px; border-radius: 50%; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="8.5" cy="7" r="4"/>
-              <line x1="18" y1="8" x2="23" y2="13"/>
-              <line x1="23" y1="8" x2="18" y2="13"/>
+        <div
+          class="revoke-modal-icon-wrap"
+          style="
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 28px 20px 14px;
+            display: flex;
+            justify-content: center;
+          "
+        >
+          <div
+            class="revoke-modal-icon"
+            style="
+              width: 60px;
+              height: 60px;
+              border-radius: 50%;
+              background: rgba(239, 68, 68, 0.1);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #ef4444;
+            "
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              width="26"
+              height="26"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="8.5" cy="7" r="4" />
+              <line x1="18" y1="8" x2="23" y2="13" />
+              <line x1="23" y1="8" x2="18" y2="13" />
             </svg>
           </div>
         </div>
-        <div class="revoke-modal-body" style="padding: 0 24px 20px;">
-          <div class="revoke-modal-title" style="font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text-1); margin-bottom: 7px;">Hapus User</div>
-          <div class="revoke-modal-desc" style="font-size: 13px; color: var(--text-2); line-height: 1.6;">
-            Anda akan menghapus user <strong>{{ deleteUserTarget?.name }}</strong> (@{{ deleteUserTarget?.username }}).
-            Aksi ini tidak dapat dibatalkan.
+        <div class="revoke-modal-body" style="padding: 0 24px 20px">
+          <div
+            class="revoke-modal-title"
+            style="
+              font-family: var(--font-display);
+              font-size: 16px;
+              font-weight: 800;
+              color: var(--text-1);
+              margin-bottom: 7px;
+            "
+          >
+            Hapus User
+          </div>
+          <div
+            class="revoke-modal-desc"
+            style="font-size: 13px; color: var(--text-2); line-height: 1.6"
+          >
+            Anda akan menghapus user
+            <strong>{{ deleteUserTarget?.name }}</strong> (@{{
+              deleteUserTarget?.username
+            }}). Aksi ini tidak dapat dibatalkan.
           </div>
         </div>
-        <div class="revoke-modal-footer" style="padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 10px;">
-          <button class="btn-sm btn-sm--ghost" @click="cancelDeleteUser" style="background: transparent; border: 1px solid var(--border); color: var(--text-2); cursor: pointer; padding: 6px 12px; border-radius: var(--r-sm); font-size: 13px;">Batal</button>
-          <button class="btn-sm btn-sm--danger" @click="confirmDeleteUser" :disabled="deletingUser" style="background: #ef4444; border: 1px solid #ef4444; color: #fff; cursor: pointer; padding: 6px 12px; border-radius: var(--r-sm); font-size: 13px; font-weight: 600;">
-            {{ deletingUser ? 'Menghapus...' : 'Ya, Hapus' }}
+        <div
+          class="revoke-modal-footer"
+          style="
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+          "
+        >
+          <button
+            class="btn-sm btn-sm--ghost"
+            @click="cancelDeleteUser"
+            style="
+              background: transparent;
+              border: 1px solid var(--border);
+              color: var(--text-2);
+              cursor: pointer;
+              padding: 6px 12px;
+              border-radius: var(--r-sm);
+              font-size: 13px;
+            "
+          >
+            Batal
+          </button>
+          <button
+            class="btn-sm btn-sm--danger"
+            @click="confirmDeleteUser"
+            :disabled="deletingUser"
+            style="
+              background: #ef4444;
+              border: 1px solid #ef4444;
+              color: #fff;
+              cursor: pointer;
+              padding: 6px 12px;
+              border-radius: var(--r-sm);
+              font-size: 13px;
+              font-weight: 600;
+            "
+          >
+            {{ deletingUser ? "Menghapus..." : "Ya, Hapus" }}
           </button>
         </div>
       </div>
@@ -667,7 +1060,18 @@
 
 <script setup>
 import { ref, computed, defineComponent, h, onMounted, watch } from "vue";
-import { updateProfile, changePassword as apiChangePassword, getSystemConfig, saveSystemConfig, getActiveSessions, revokeSession as apiRevokeSession, getUsers, createUser, deleteUser, getAgentsList } from "@/services/api";
+import {
+  updateProfile,
+  changePassword as apiChangePassword,
+  getSystemConfig,
+  saveSystemConfig,
+  getActiveSessions,
+  revokeSession as apiRevokeSession,
+  getUsers,
+  createUser,
+  deleteUser,
+  getAgentsList,
+} from "@/services/api";
 
 const activeSection = ref("profile");
 const saved = ref(false);
@@ -693,10 +1097,7 @@ const passwordForm = ref({
   confirmPassword: "",
 });
 
-const is2FAEnabled = ref(false);
-const show2FAModal = ref(false);
-const tfaCode = ref("");
-const tfaError = ref("");
+
 
 const sessions = ref([]);
 const showRevokeModal = ref(false);
@@ -790,22 +1191,12 @@ const IconDisplay = defineComponent({
     ),
 });
 
-const IconMail = mkI([
-  "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z",
-  "M22 6l-10 7L2 6",
-]);
-const IconPhone = mkI(
-  "M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 .18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.19-1.19a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z",
-);
-const IconSlack = mkI([
-  "M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z",
-  "M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z",
-]);
+
 const IconUsers = mkI([
   "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2",
   "M9 11a4 4 0 100-8 4 4 0 000 8z",
   "M23 21v-2a4 4 0 00-3-3.87",
-  "M16 3.13a4 4 0 010 7.75"
+  "M16 3.13a4 4 0 010 7.75",
 ]);
 
 const sections = [
@@ -825,7 +1216,7 @@ const sections = [
   {
     key: "notifications",
     label: "Notifications",
-    sub: "Alerts & channels",
+    sub: "Alerts & preferences",
     icon: IconBell,
   },
   {
@@ -843,7 +1234,7 @@ const sections = [
 ];
 
 const filteredSections = computed(() => {
-  return sections.filter(s => {
+  return sections.filter((s) => {
     if (s.key === "system" || s.key === "users") {
       return profile.value.role === "SUPER_ADMIN";
     }
@@ -916,15 +1307,11 @@ const notifications = ref([
   },
 ]);
 
-const channels = ref([
-  { label: "Email", enabled: true, icon: IconMail },
-  { label: "WhatsApp", enabled: false, icon: IconPhone },
-  { label: "Slack", enabled: false, icon: IconSlack },
-]);
+
 
 onMounted(async () => {
-  isDark.value = localStorage.getItem('vnet-theme') === 'dark';
-  if (isDark.value) document.documentElement.classList.add('dark');
+  isDark.value = localStorage.getItem("vnet-theme") === "dark";
+  if (isDark.value) document.documentElement.classList.add("dark");
 
   const stored = localStorage.getItem("vnet_user");
   if (stored) {
@@ -939,8 +1326,11 @@ onMounted(async () => {
   }
 
   // Enforce activeSection check for non-SUPER_ADMIN
-  if (profile.value.role !== 'SUPER_ADMIN' && activeSection.value === 'system') {
-    activeSection.value = 'profile';
+  if (
+    profile.value.role !== "SUPER_ADMIN" &&
+    activeSection.value === "system"
+  ) {
+    activeSection.value = "profile";
   }
 
   // Load system config from backend, fallback to localStorage
@@ -952,15 +1342,22 @@ onMounted(async () => {
         syncInterval: config.syncInterval || 15,
         maxImportBatch: config.maxImportBatch || 1200,
         autoBackup: config.autoBackup === true || config.autoBackup === "true",
-        maintenanceMode: config.maintenanceMode === true || config.maintenanceMode === "true",
+        maintenanceMode:
+          config.maintenanceMode === true || config.maintenanceMode === "true",
       };
     }
   } catch (err) {
-    console.error("Gagal memuat konfigurasi sistem dari API, fallback ke localStorage", err);
+    console.error(
+      "Gagal memuat konfigurasi sistem dari API, fallback ke localStorage",
+      err,
+    );
     const storedSystem = localStorage.getItem("vnet_system_config");
     if (storedSystem) {
       try {
-        systemConfig.value = { ...systemConfig.value, ...JSON.parse(storedSystem) };
+        systemConfig.value = {
+          ...systemConfig.value,
+          ...JSON.parse(storedSystem),
+        };
       } catch (e) {}
     }
   }
@@ -969,54 +1366,57 @@ onMounted(async () => {
   if (storedNotifs) {
     try {
       const parsed = JSON.parse(storedNotifs);
-      notifications.value.forEach(n => {
-        const matching = parsed.find(p => p.key === n.key);
+      notifications.value.forEach((n) => {
+        const matching = parsed.find((p) => p.key === n.key);
         if (matching) n.enabled = matching.enabled;
       });
     } catch (e) {}
   }
 
-  const storedChannels = localStorage.getItem("vnet_notif_channels");
-  if (storedChannels) {
-    try {
-      const parsed = JSON.parse(storedChannels);
-      channels.value.forEach(c => {
-        const matching = parsed.find(p => p.label === c.label);
-        if (matching) c.enabled = matching.enabled;
-      });
-    } catch (e) {}
-  }
 
-  is2FAEnabled.value = localStorage.getItem("vnet_2fa_enabled") === "true";
 
   const storedDisplay = localStorage.getItem("vnet_display_preferences");
   if (storedDisplay) {
     try {
-      displayPreferences.value = { ...displayPreferences.value, ...JSON.parse(storedDisplay) };
+      displayPreferences.value = {
+        ...displayPreferences.value,
+        ...JSON.parse(storedDisplay),
+      };
     } catch (e) {}
   }
 
   await loadSessions();
-  if (activeSection.value === 'users') {
+  if (activeSection.value === "users") {
     loadUsersAndAgents();
   }
 });
 
-watch(() => displayPreferences.value.rowDensity, (newDensity) => {
-  let paddingVal = "14px 20px";
-  if (newDensity === "compact") paddingVal = "8px 14px";
-  if (newDensity === "spacious") paddingVal = "20px 24px";
-  document.documentElement.style.setProperty("--table-row-padding", paddingVal);
-}, { immediate: true });
+watch(
+  () => displayPreferences.value.rowDensity,
+  (newDensity) => {
+    let paddingVal = "14px 20px";
+    if (newDensity === "compact") paddingVal = "8px 14px";
+    if (newDensity === "spacious") paddingVal = "20px 24px";
+    document.documentElement.style.setProperty(
+      "--table-row-padding",
+      paddingVal,
+    );
+  },
+  { immediate: true },
+);
 
 function toggleDark() {
   isDark.value = !isDark.value;
-  document.documentElement.classList.toggle('dark', isDark.value);
-  localStorage.setItem('vnet-theme', isDark.value ? 'dark' : 'light');
+  document.documentElement.classList.toggle("dark", isDark.value);
+  localStorage.setItem("vnet-theme", isDark.value ? "dark" : "light");
 }
 
 async function changePassword() {
-  if (!passwordForm.value.currentPassword || !passwordForm.value.newPassword || !passwordForm.value.confirmPassword) {
+  if (
+    !passwordForm.value.currentPassword ||
+    !passwordForm.value.newPassword ||
+    !passwordForm.value.confirmPassword
+  ) {
     alert("Silakan isi semua kolom password.");
     return;
   }
@@ -1042,28 +1442,7 @@ async function changePassword() {
   }
 }
 
-function toggle2FA() {
-  if (is2FAEnabled.value) {
-    is2FAEnabled.value = false;
-    localStorage.setItem("vnet_2fa_enabled", "false");
-    alert("Two-Factor Authentication (2FA) dinonaktifkan.");
-  } else {
-    tfaCode.value = "";
-    tfaError.value = "";
-    show2FAModal.value = true;
-  }
-}
 
-function confirm2FA() {
-  if (tfaCode.value.trim().length !== 6 || isNaN(Number(tfaCode.value))) {
-    tfaError.value = "Kode harus berupa 6 digit angka.";
-    return;
-  }
-  is2FAEnabled.value = true;
-  localStorage.setItem("vnet_2fa_enabled", "true");
-  show2FAModal.value = false;
-  alert("Two-Factor Authentication (2FA) berhasil diaktifkan!");
-}
 
 async function loadSessions() {
   try {
@@ -1086,7 +1465,9 @@ async function confirmRevoke() {
   loadingRevoke.value = true;
   try {
     await apiRevokeSession(revokeTarget.value.id);
-    sessions.value = sessions.value.filter(s => s.id !== revokeTarget.value.id);
+    sessions.value = sessions.value.filter(
+      (s) => s.id !== revokeTarget.value.id,
+    );
     showRevokeModal.value = false;
   } catch (err) {
     console.error("Gagal mengeluarkan sesi:", err.message);
@@ -1102,7 +1483,7 @@ function cancelRevoke() {
 }
 
 async function saveAll() {
-  if (activeSection.value === 'profile') {
+  if (activeSection.value === "profile") {
     try {
       const res = await updateProfile({
         name: profile.value.name,
@@ -1126,7 +1507,7 @@ async function saveAll() {
     }
   }
 
-  if (activeSection.value === 'system') {
+  if (activeSection.value === "system") {
     try {
       await saveSystemConfig(systemConfig.value);
     } catch (err) {
@@ -1135,10 +1516,19 @@ async function saveAll() {
     }
   }
 
-  localStorage.setItem("vnet_system_config", JSON.stringify(systemConfig.value));
-  localStorage.setItem("vnet_notifications", JSON.stringify(notifications.value));
-  localStorage.setItem("vnet_notif_channels", JSON.stringify(channels.value));
-  localStorage.setItem("vnet_display_preferences", JSON.stringify(displayPreferences.value));
+  localStorage.setItem(
+    "vnet_system_config",
+    JSON.stringify(systemConfig.value),
+  );
+  localStorage.setItem(
+    "vnet_notifications",
+    JSON.stringify(notifications.value),
+  );
+
+  localStorage.setItem(
+    "vnet_display_preferences",
+    JSON.stringify(displayPreferences.value),
+  );
 
   saved.value = true;
   setTimeout(() => {
@@ -1160,7 +1550,7 @@ const newUserForm = ref({
   username: "",
   password: "",
   role: "AGENT",
-  agentId: ""
+  agentId: "",
 });
 
 const loadUsersAndAgents = async () => {
@@ -1178,7 +1568,10 @@ const loadUsersAndAgents = async () => {
     agentsList.value = aData || [];
   } catch (err) {
     console.error("Failed to load agents", err);
-    loadError.value = (loadError.value ? loadError.value + " | " : "") + "Gagal memuat agen: " + (err.message || err);
+    loadError.value =
+      (loadError.value ? loadError.value + " | " : "") +
+      "Gagal memuat agen: " +
+      (err.message || err);
   }
 };
 
@@ -1189,9 +1582,9 @@ watch(activeSection, (newSection) => {
 });
 
 const getRoleClass = (role) => {
-  if (role === 'SUPER_ADMIN') return 'role-badge-admin';
-  if (role === 'STAFF') return 'role-badge-staff';
-  return 'role-badge-agent';
+  if (role === "SUPER_ADMIN") return "role-badge-admin";
+  if (role === "STAFF") return "role-badge-staff";
+  return "role-badge-agent";
 };
 
 const openAddUserModal = () => {
@@ -1200,7 +1593,7 @@ const openAddUserModal = () => {
     username: "",
     password: "",
     role: "AGENT",
-    agentId: ""
+    agentId: "",
   };
   addUserError.value = "";
   showAddUserModal.value = true;
@@ -1211,7 +1604,11 @@ const closeAddUserModal = () => {
 };
 
 const submitAddUser = async () => {
-  if (!newUserForm.value.name.trim() || !newUserForm.value.username.trim() || !newUserForm.value.password.trim()) {
+  if (
+    !newUserForm.value.name.trim() ||
+    !newUserForm.value.username.trim() ||
+    !newUserForm.value.password.trim()
+  ) {
     addUserError.value = "Semua field wajib diisi";
     return;
   }
@@ -1219,7 +1616,7 @@ const submitAddUser = async () => {
     addUserError.value = "Password minimal 6 karakter";
     return;
   }
-  if (newUserForm.value.role === 'AGENT' && !newUserForm.value.agentId) {
+  if (newUserForm.value.role === "AGENT" && !newUserForm.value.agentId) {
     addUserError.value = "Pilih Agen wajib diisi jika role adalah AGENT";
     return;
   }
@@ -1233,7 +1630,7 @@ const submitAddUser = async () => {
       password: newUserForm.value.password,
       role: newUserForm.value.role,
     };
-    if (newUserForm.value.role === 'AGENT') {
+    if (newUserForm.value.role === "AGENT") {
       payload.agentId = newUserForm.value.agentId;
     }
 
@@ -1795,7 +2192,7 @@ const confirmDeleteUser = async () => {
 .revoke-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
   z-index: 9999;
   display: flex;
@@ -1809,7 +2206,7 @@ const confirmDeleteUser = async () => {
   max-width: 380px;
   background: var(--card-bg, #fff);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
   overflow: hidden;
   text-align: center;
   animation: popIn 0.2s ease-out;
@@ -1823,7 +2220,7 @@ const confirmDeleteUser = async () => {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #FFF7ED;
+  background: #fff7ed;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1870,12 +2267,22 @@ const confirmDeleteUser = async () => {
   color: var(--text-1);
 }
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes popIn {
-  from { transform: scale(0.94); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .display-grid {
@@ -1971,25 +2378,62 @@ const confirmDeleteUser = async () => {
 
 /* Dark Mode Card */
 .dark-mode-card {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 16px 18px;
-  border: 1px solid var(--border); border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
   background: var(--surface-2);
   gap: 12px;
 }
-.dark-mode-info { display: flex; align-items: center; gap: 12px; }
-.dark-mode-icon {
-  width: 38px; height: 38px; border-radius: var(--r-sm);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.dark-mode-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.dark-mode-icon svg { width: 18px; height: 18px; }
-.dark-mode-icon--light { background: #FEF3E0; color: var(--gold); }
-.dark-mode-icon--dark { background: #EEF2FF; color: var(--navy); }
-.dark-mode-label { font-size: 13px; font-weight: 600; color: var(--text-1); }
-.dark-mode-desc { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.dark-mode-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dark-mode-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.dark-mode-icon--light {
+  background: #fef3e0;
+  color: var(--gold);
+}
+.dark-mode-icon--dark {
+  background: #eef2ff;
+  color: var(--navy);
+}
+.dark-mode-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.dark-mode-desc {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
 
 /* Improve active nav with accent */
-.snav-item--active { background: linear-gradient(90deg, rgba(13,19,64,0.06) 0%, transparent 100%); border-left: 3px solid var(--navy); padding-left: 9px; }
+.snav-item--active {
+  background: linear-gradient(
+    90deg,
+    rgba(13, 19, 64, 0.06) 0%,
+    transparent 100%
+  );
+  border-left: 3px solid var(--navy);
+  padding-left: 9px;
+}
 
 /* 2FA Modal Styles */
 .modal-overlay {
@@ -2138,12 +2582,22 @@ const confirmDeleteUser = async () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes scaleUp {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Badges */
@@ -2161,21 +2615,22 @@ const confirmDeleteUser = async () => {
 }
 
 /* User table styles */
-.users-table th, .users-table td {
+.users-table th,
+.users-table td {
   border-bottom: 1px solid var(--border);
 }
 .users-table tr:hover {
-  background: rgba(0,0,0,0.01);
+  background: rgba(0, 0, 0, 0.01);
 }
 .dark .users-table tr:hover {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* User Modal styling */
 .user-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
   z-index: 9999;
   display: flex;
@@ -2189,7 +2644,7 @@ const confirmDeleteUser = async () => {
   max-width: 440px;
   background: var(--card-bg, #fff);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
   border: 1px solid var(--border);
   overflow: hidden;
   animation: popIn 0.2s ease-out;

@@ -39,8 +39,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="panel-error-icon">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/>
         </svg>
-        <div>Gagal memuat data customer. Coba lagi.</div>
-        <button class="btn btn--primary" @click="loadCustomers">Retry</button>
+        <div style="font-weight: 600;">Gagal memuat data customer.</div>
+        <div v-if="errorMessage" style="font-size: 12px; color: var(--text-3); margin-top: 4px; word-break: break-all;">{{ errorMessage }}</div>
+        <button class="btn btn--primary" @click="loadCustomers" style="margin-top: 8px;">Retry</button>
       </div>
 
       <!-- Content -->
@@ -157,21 +158,23 @@ import { getAgentCustomers } from "@/services/api";
 const props = defineProps({
   visible: Boolean,
   agent: Object, // The performance row agent object
+  period: String, // The selected period, e.g. "2025-12"
 });
 
 const emit = defineEmits(["close"]);
 
 const loading = ref(false);
 const error = ref(false);
+const errorMessage = ref("");
 const customers = ref([]);
 const searchQuery = ref("");
 
 watch(
-  () => props.visible,
-  async (newVal) => {
-    if (newVal && props.agent?.id) {
+  [() => props.visible, () => props.period, () => props.agent?.id],
+  async ([newVisible]) => {
+    if (newVisible && props.agent?.id) {
       await loadCustomers();
-    } else {
+    } else if (!newVisible) {
       searchQuery.value = "";
     }
   }
@@ -180,12 +183,14 @@ watch(
 async function loadCustomers() {
   loading.value = true;
   error.value = false;
+  errorMessage.value = "";
   try {
-    const data = await getAgentCustomers(props.agent.id);
+    const data = await getAgentCustomers(props.agent.id, props.period);
     customers.value = data || [];
   } catch (err) {
     console.error("Gagal mengambil customer agent:", err);
     error.value = true;
+    errorMessage.value = err.message || "Terjadi kesalahan koneksi.";
   } finally {
     loading.value = false;
   }

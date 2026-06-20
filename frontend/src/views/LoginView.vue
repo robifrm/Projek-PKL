@@ -123,6 +123,16 @@
       <!-- Top-right: Sign Up link disabled -->
 
       <div class="form-wrap">
+        <!-- Logo for mobile view (max-width 900px) -->
+        <div class="mobile-logo">
+          <img
+            src="/brand/vnet-logo.png"
+            alt="VNet"
+            class="mobile-logo-img"
+            @error="handleLogoError"
+          />
+        </div>
+
         <!-- Form Header -->
         <div class="form-hdr">
           <h2 class="form-title">Selamat Datang!</h2>
@@ -952,6 +962,16 @@ const handleLoginInit = async () => {
 }
 
 /* ─── Responsive ─────────────────────────────────── */
+.mobile-logo {
+  display: none;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.mobile-logo-img {
+  height: 42px;
+  object-fit: contain;
+}
+
 @media (max-width: 900px) {
   .auth-left {
     display: none;
@@ -962,6 +982,9 @@ const handleLoginInit = async () => {
   .auth-topbar {
     top: 20px;
     right: 20px;
+  }
+  .mobile-logo {
+    display: flex;
   }
 }
 @media (max-width: 480px) {

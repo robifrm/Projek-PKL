@@ -51,8 +51,15 @@ public class AgentController {
     }
 
     @GetMapping("/{id}/customers")
-    public ResponseEntity<List<Customer>> getAgentCustomers(@PathVariable Long id) {
-        return ResponseEntity.ok(customerRepository.findAllByAgentId(id));
+    public ResponseEntity<List<Customer>> getAgentCustomers(
+            @PathVariable Long id,
+            @RequestParam(required = false) String period
+    ) {
+        List<Customer> customers = customerRepository.findAllByAgentId(id);
+        if (period != null && !period.trim().isEmpty()) {
+            customers = analyticsService.filterCustomersByPeriod(customers, period);
+        }
+        return ResponseEntity.ok(customers);
     }
 
     @PostMapping

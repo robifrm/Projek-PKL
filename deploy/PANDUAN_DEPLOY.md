@@ -48,6 +48,18 @@ scp "c:\vnet-projek\deploy\nginx.conf" root@IP_VPS:/etc/nginx/sites-available/vn
 
 # Upload service file
 scp "c:\vnet-projek\deploy\vnet-backend.service" root@IP_VPS:/etc/systemd/system/
+
+# Upload .env.example sebagai template .env di VPS
+scp "c:\vnet-projek\deploy\.env.example" root@IP_VPS:/var/www/vnet/backend/.env
+```
+
+### STEP 3.5 — Konfigurasi .env di VPS
+Setelah file terupload, buka SSH VPS dan jalankan perintah berikut untuk mengedit konfigurasi database & JWT rahasia milik VPS:
+```bash
+# Buka file .env di VPS
+nano /var/www/vnet/backend/.env
+
+# Ganti password database dan JWT secret key sesuai kebutuhan, lalu simpan (Ctrl+O, Enter, Ctrl+X)
 ```
 
 ---

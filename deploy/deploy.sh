@@ -12,7 +12,7 @@ echo "======================================"
 # ---- KONFIGURASI (GANTI SESUAI KEBUTUHAN) ----
 DB_NAME="vnet_db"
 DB_USER="vnetuser"
-DB_PASS="VNet@DB2024!"
+DB_PASS="VNet@DB2026!"
 APP_DIR="/var/www/vnet"
 JAR_NAME="vnet-backend-0.0.1-SNAPSHOT.jar"
 # -----------------------------------------------

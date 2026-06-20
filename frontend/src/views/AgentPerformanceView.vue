@@ -1042,6 +1042,7 @@
       <AgentDetailPanel
         :visible="showDetailPanel"
         :agent="selectedAgent"
+        :period="period"
         @close="showDetailPanel = false"
       />
     </Teleport>

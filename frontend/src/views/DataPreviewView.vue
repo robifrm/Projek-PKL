@@ -16,6 +16,10 @@
         </div>
       </div>
       <div class="page-actions">
+        <button class="btn btn--ghost" :disabled="isCommitting" @click="showDiscardConfirm = true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Discard Import
+        </button>
         <button class="btn btn--primary" :disabled="isCommitting || !sourceRows.length" @click="commitImport">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           {{ isCommitting ? 'Committing...' : 'Commit Import' }}
@@ -232,6 +236,29 @@
       </div>
     </div>
 
+    <!-- Confirm Discard Modal -->
+    <div class="modal-overlay" v-if="showDiscardConfirm">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-alert-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Discard Import Preview?</h3>
+            <p class="modal-sub">You are about to discard all parsed customer records. This action cannot be undone.</p>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn--ghost" @click="showDiscardConfirm = false">Keep Preview</button>
+          <button class="btn btn--danger" @click="confirmDiscard">Discard Data</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -239,8 +266,10 @@
 import { ref, computed, defineComponent, h, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { confirmImport } from '@/services/api'
+import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
+const toast = useToast()
 
 const activeTab  = ref('all')
 const currentPage = ref(1)
@@ -250,6 +279,14 @@ const fileName = ref('manual-confirm')
 const isCommitting = ref(false)
 const commitResult = ref(null)
 const commitError = ref('')
+const showDiscardConfirm = ref(false)
+
+function confirmDiscard() {
+  sessionStorage.removeItem('vnetImportPreview')
+  toast.warning('Import preview discarded')
+  showDiscardConfirm.value = false
+  router.replace('/data-import')
+}
 
 // Icon components
 const makeIcon = (paths) =>
@@ -801,5 +838,81 @@ watch([activeTab, filteredRows], () => {
     align-items: center;
     text-align: center;
   }
+}
+
+/* Confirm Discard Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 24px;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; gap: 20px;
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  display: flex; gap: 16px; align-items: flex-start;
+}
+
+.modal-alert-icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  color: var(--red-warn);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.modal-alert-icon svg { width: 20px; height: 20px; }
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.modal-sub {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+}
+
+.btn--danger {
+  background: var(--red-warn);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  border: none;
+}
+.btn--danger:hover {
+  background: #C0392B;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 </style>

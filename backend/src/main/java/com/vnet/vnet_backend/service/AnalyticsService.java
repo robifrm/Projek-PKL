@@ -165,6 +165,14 @@ public class AnalyticsService {
     }
 
     @Transactional(readOnly = true)
+    public List<Customer> filterCustomersByPeriod(List<Customer> customers, String period) {
+        synchronized (lock) {
+            DateRange range = periodRange(period, customers, 0);
+            return filterByRange(customers, range);
+        }
+    }
+
+    @Transactional(readOnly = true)
     public Map<String, Object> getAddressInsights() {
         synchronized (lock) {
             String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
