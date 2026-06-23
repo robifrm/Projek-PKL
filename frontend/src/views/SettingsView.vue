@@ -165,37 +165,7 @@
           </div>
         </div>
 
-        <!-- Notifications -->
-        <div
-          v-show="activeSection === 'notifications'"
-          class="settings-section card"
-        >
-          <div class="section-title">Notification Preferences</div>
-          <div class="section-sub">
-            Choose when and how you receive alerts from the system.
-          </div>
 
-          <div class="notif-list">
-            <div class="notif-row" v-for="n in notifications" :key="n.key">
-              <div
-                class="notif-icon"
-                :style="{ background: n.iconBg, color: n.iconColor }"
-              >
-                <component :is="n.icon" />
-              </div>
-              <div class="notif-info">
-                <div class="notif-label">{{ n.label }}</div>
-                <div class="notif-desc">{{ n.desc }}</div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" v-model="n.enabled" />
-                <span class="toggle-track"></span>
-              </label>
-            </div>
-          </div>
-
-
-        </div>
 
         <!-- Security -->
         <div
@@ -281,162 +251,7 @@
           </div>
         </div>
 
-        <!-- Display -->
-        <div v-show="activeSection === 'display'" class="settings-section card">
-          <div class="section-title">Display & Appearance</div>
-          <div class="section-sub">
-            Customize the look and feel of your dashboard.
-          </div>
 
-          <div class="display-grid">
-            <div class="form-group">
-              <label class="form-label">Language</label>
-              <div class="select-wrap">
-                <select
-                  class="form-input"
-                  v-model="displayPreferences.language"
-                >
-                  <option>Bahasa Indonesia</option>
-                  <option>English</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Timezone</label>
-              <div class="select-wrap">
-                <select
-                  class="form-input"
-                  v-model="displayPreferences.timezone"
-                >
-                  <option>Asia/Jakarta (WIB, UTC+7)</option>
-                  <option>Asia/Singapore</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Date Format</label>
-              <div class="select-wrap">
-                <select
-                  class="form-input"
-                  v-model="displayPreferences.dateFormat"
-                >
-                  <option>DD/MM/YYYY</option>
-                  <option>MM/DD/YYYY</option>
-                  <option>YYYY-MM-DD</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Currency Display</label>
-              <div class="select-wrap">
-                <select
-                  class="form-input"
-                  v-model="displayPreferences.currency"
-                >
-                  <option>Rupiah (Rp)</option>
-                  <option>USD ($)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="theme-section">
-            <div class="form-label" style="margin-bottom: 12px">
-              Table Row Density
-            </div>
-            <div class="density-row">
-              <button
-                class="density-btn"
-                :class="{
-                  'density-btn--active':
-                    displayPreferences.rowDensity === 'comfortable',
-                }"
-                @click="displayPreferences.rowDensity = 'comfortable'"
-              >
-                Comfortable
-              </button>
-              <button
-                class="density-btn"
-                :class="{
-                  'density-btn--active':
-                    displayPreferences.rowDensity === 'compact',
-                }"
-                @click="displayPreferences.rowDensity = 'compact'"
-              >
-                Compact
-              </button>
-              <button
-                class="density-btn"
-                :class="{
-                  'density-btn--active':
-                    displayPreferences.rowDensity === 'spacious',
-                }"
-                @click="displayPreferences.rowDensity = 'spacious'"
-              >
-                Spacious
-              </button>
-            </div>
-          </div>
-
-          <div class="theme-section">
-            <div class="form-label" style="margin-bottom: 10px">
-              Appearance Mode
-            </div>
-            <div class="dark-mode-card">
-              <div class="dark-mode-info">
-                <div
-                  class="dark-mode-icon"
-                  :class="
-                    isDark ? 'dark-mode-icon--dark' : 'dark-mode-icon--light'
-                  "
-                >
-                  <svg
-                    v-if="isDark"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.7"
-                    stroke-linecap="round"
-                  >
-                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                  </svg>
-                  <svg
-                    v-else
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.7"
-                    stroke-linecap="round"
-                  >
-                    <circle cx="12" cy="12" r="5" />
-                    <line x1="12" y1="1" x2="12" y2="3" />
-                    <line x1="12" y1="21" x2="12" y2="23" />
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                    <line x1="1" y1="12" x2="3" y2="12" />
-                    <line x1="21" y1="12" x2="23" y2="12" />
-                  </svg>
-                </div>
-                <div>
-                  <div class="dark-mode-label">
-                    {{ isDark ? "Dark Mode" : "Light Mode" }}
-                  </div>
-                  <div class="dark-mode-desc">
-                    {{
-                      isDark
-                        ? "Dark color scheme is active"
-                        : "Light color scheme is active"
-                    }}
-                  </div>
-                </div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" :checked="isDark" @change="toggleDark" />
-                <span class="toggle-track"></span>
-              </label>
-            </div>
-          </div>
-        </div>
 
         <!-- User Management (SUPER_ADMIN only) -->
         <div v-show="activeSection === 'users'" class="settings-section card">
@@ -1075,7 +890,6 @@ import {
 
 const activeSection = ref("profile");
 const saved = ref(false);
-const isDark = ref(false);
 
 const profile = ref({
   name: "",
@@ -1103,16 +917,6 @@ const sessions = ref([]);
 const showRevokeModal = ref(false);
 const revokeTarget = ref(null);
 const loadingRevoke = ref(false);
-
-const displayPreferences = ref({
-  language: "Bahasa Indonesia",
-  timezone: "Asia/Jakarta (WIB, UTC+7)",
-  dateFormat: "DD/MM/YYYY",
-  currency: "Rupiah (Rp)",
-  rowDensity: "comfortable",
-});
-
-const fileInput = ref(null);
 
 const avatarInitials = computed(() => {
   if (!profile.value.name) return "A";
@@ -1166,31 +970,7 @@ const IconSystem = defineComponent({
       ],
     ),
 });
-const IconBell = mkI(
-  "M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0",
-);
 const IconShield = mkI("M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z");
-const IconDisplay = defineComponent({
-  render: () =>
-    h(
-      "svg",
-      {
-        viewBox: "0 0 24 24",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "1.7",
-        "stroke-linecap": "round",
-        style: "width:16px;height:16px",
-      },
-      [
-        h("circle", { cx: "12", cy: "12", r: "3" }),
-        h("path", {
-          d: "M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z",
-        }),
-      ],
-    ),
-});
-
 
 const IconUsers = mkI([
   "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2",
@@ -1214,22 +994,10 @@ const sections = [
     icon: IconSystem,
   },
   {
-    key: "notifications",
-    label: "Notifications",
-    sub: "Alerts & preferences",
-    icon: IconBell,
-  },
-  {
     key: "security",
     label: "Security",
     sub: "Password & sessions",
     icon: IconShield,
-  },
-  {
-    key: "display",
-    label: "Display",
-    sub: "Language & appearance",
-    icon: IconDisplay,
   },
 ];
 
@@ -1242,77 +1010,11 @@ const filteredSections = computed(() => {
   });
 });
 
-const notifications = ref([
-  {
-    key: "new_customer",
-    label: "New Customer Registered",
-    desc: "Alert when a new customer is added to the database.",
-    enabled: true,
-    icon: mkI([
-      "M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2",
-      "M12 11a4 4 0 100-8 4 4 0 000 8z",
-    ]),
-    iconBg: "#EEF2FF",
-    iconColor: "var(--navy)",
-  },
-  {
-    key: "isolir",
-    label: "Isolir Rate Warning",
-    desc: "Alert when isolir rate exceeds 20% threshold.",
-    enabled: true,
-    icon: mkI([
-      "M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z",
-      "M12 9v4",
-      "M12 17h.01",
-    ]),
-    iconBg: "#FEF3E0",
-    iconColor: "var(--gold)",
-  },
-  {
-    key: "import_done",
-    label: "Import Completed",
-    desc: "Notify when a data import finishes successfully.",
-    enabled: true,
-    icon: mkI([
-      "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4",
-      "M17 8l-5-5-5 5",
-      "M12 3v12",
-    ]),
-    iconBg: "#E0F8F6",
-    iconColor: "var(--teal)",
-  },
-  {
-    key: "sync_fail",
-    label: "Sync Failure Alert",
-    desc: "Alert when database sync fails or times out.",
-    enabled: true,
-    icon: mkI(["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"]),
-    iconBg: "#FDECEB",
-    iconColor: "var(--red-warn)",
-  },
-  {
-    key: "weekly_report",
-    label: "Weekly Report",
-    desc: "Receive automated weekly performance digest.",
-    enabled: false,
-    icon: mkI([
-      "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z",
-      "M14 2v6h6",
-      "M16 13H8",
-      "M16 17H8",
-      "M10 9H8",
-    ]),
-    iconBg: "#F4F6FB",
-    iconColor: "var(--text-3)",
-  },
-]);
+
 
 
 
 onMounted(async () => {
-  isDark.value = localStorage.getItem("vnet-theme") === "dark";
-  if (isDark.value) document.documentElement.classList.add("dark");
-
   const stored = localStorage.getItem("vnet_user");
   if (stored) {
     try {
@@ -1362,54 +1064,13 @@ onMounted(async () => {
     }
   }
 
-  const storedNotifs = localStorage.getItem("vnet_notifications");
-  if (storedNotifs) {
-    try {
-      const parsed = JSON.parse(storedNotifs);
-      notifications.value.forEach((n) => {
-        const matching = parsed.find((p) => p.key === n.key);
-        if (matching) n.enabled = matching.enabled;
-      });
-    } catch (e) {}
-  }
-
-
-
-  const storedDisplay = localStorage.getItem("vnet_display_preferences");
-  if (storedDisplay) {
-    try {
-      displayPreferences.value = {
-        ...displayPreferences.value,
-        ...JSON.parse(storedDisplay),
-      };
-    } catch (e) {}
-  }
-
   await loadSessions();
   if (activeSection.value === "users") {
     loadUsersAndAgents();
   }
 });
 
-watch(
-  () => displayPreferences.value.rowDensity,
-  (newDensity) => {
-    let paddingVal = "14px 20px";
-    if (newDensity === "compact") paddingVal = "8px 14px";
-    if (newDensity === "spacious") paddingVal = "20px 24px";
-    document.documentElement.style.setProperty(
-      "--table-row-padding",
-      paddingVal,
-    );
-  },
-  { immediate: true },
-);
 
-function toggleDark() {
-  isDark.value = !isDark.value;
-  document.documentElement.classList.toggle("dark", isDark.value);
-  localStorage.setItem("vnet-theme", isDark.value ? "dark" : "light");
-}
 
 async function changePassword() {
   if (
@@ -1519,15 +1180,6 @@ async function saveAll() {
   localStorage.setItem(
     "vnet_system_config",
     JSON.stringify(systemConfig.value),
-  );
-  localStorage.setItem(
-    "vnet_notifications",
-    JSON.stringify(notifications.value),
-  );
-
-  localStorage.setItem(
-    "vnet_display_preferences",
-    JSON.stringify(displayPreferences.value),
   );
 
   saved.value = true;
@@ -1989,120 +1641,7 @@ const confirmDeleteUser = async () => {
   transform: translateX(18px);
 }
 
-.engine-status {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: var(--bg);
-  border-radius: var(--r-md);
-}
-.es-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--green-ok);
-  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
-  flex-shrink: 0;
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgba(39, 174, 96, 0.06);
-  }
-}
-.es-info {
-  flex: 1;
-}
-.es-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0;
-  color: var(--text-3);
-  font-family: var(--font-display);
-}
-.es-val {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--green-ok);
-  margin-top: 1px;
-}
 
-.notif-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  overflow: hidden;
-}
-.notif-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-}
-.notif-row:last-child {
-  border-bottom: none;
-}
-.notif-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--r-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.notif-info {
-  flex: 1;
-}
-.notif-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-1);
-}
-.notif-desc {
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 2px;
-}
-
-.channel-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-.channel-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-}
-.channel-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--bg);
-  border-radius: var(--r-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-2);
-}
-.channel-label {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-1);
-}
 
 .sec-block {
   padding: 20px;
@@ -2119,22 +1658,6 @@ const confirmDeleteUser = async () => {
   color: var(--text-1);
   text-transform: uppercase;
   letter-spacing: 0;
-}
-.tfa-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.tfa-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-1);
-}
-.tfa-desc {
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 2px;
 }
 .session-list {
   display: flex;
@@ -2285,40 +1808,7 @@ const confirmDeleteUser = async () => {
   }
 }
 
-.display-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.select-wrap {
-  position: relative;
-}
-.select-wrap select {
-  width: 100%;
-}
-.theme-section {
-}
-.density-row {
-  display: flex;
-  gap: 8px;
-}
-.density-btn {
-  padding: 9px 20px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border);
-  background: none;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--font-body);
-  color: var(--text-2);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.density-btn--active {
-  background: var(--navy);
-  color: #fff;
-  border-color: var(--navy);
-}
+
 
 .save-toast {
   position: fixed;
@@ -2358,8 +1848,7 @@ const confirmDeleteUser = async () => {
     flex-wrap: wrap;
     position: static;
   }
-  .form-grid,
-  .display-grid {
+  .form-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -2376,53 +1865,7 @@ const confirmDeleteUser = async () => {
   }
 }
 
-/* Dark Mode Card */
-.dark-mode-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 18px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--surface-2);
-  gap: 12px;
-}
-.dark-mode-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.dark-mode-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.dark-mode-icon svg {
-  width: 18px;
-  height: 18px;
-}
-.dark-mode-icon--light {
-  background: #fef3e0;
-  color: var(--gold);
-}
-.dark-mode-icon--dark {
-  background: #eef2ff;
-  color: var(--navy);
-}
-.dark-mode-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-1);
-}
-.dark-mode-desc {
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 2px;
-}
+
 
 /* Improve active nav with accent */
 .snav-item--active {
@@ -2433,171 +1876,6 @@ const confirmDeleteUser = async () => {
   );
   border-left: 3px solid var(--navy);
   padding-left: 9px;
-}
-
-/* 2FA Modal Styles */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  animation: fadeIn 0.2s ease;
-}
-.modal-card {
-  width: 480px;
-  max-width: 90%;
-  padding: 24px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-xl);
-  animation: scaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-.modal-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text-1);
-}
-.modal-close {
-  background: none;
-  border: none;
-  color: var(--text-3);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 50%;
-  transition: all 0.15s;
-}
-.modal-close:hover {
-  background: var(--bg);
-  color: var(--text-1);
-}
-.modal-close svg {
-  width: 18px;
-  height: 18px;
-}
-.modal-desc {
-  font-size: 13px;
-  color: var(--text-2);
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-.tfa-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.tfa-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--text-1);
-  line-height: 1.4;
-}
-.step-num {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: var(--navy);
-  color: #fff;
-  border-radius: 50%;
-  font-size: 11px;
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.qr-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  align-self: center;
-}
-.simulated-qr {
-  width: 140px;
-  height: 140px;
-  background: #fff;
-  padding: 8px;
-  border-radius: var(--r-sm);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #000;
-}
-.qr-svg {
-  width: 100%;
-  height: 100%;
-}
-.qr-secret {
-  font-size: 11px;
-  color: var(--text-3);
-}
-.qr-secret code {
-  font-family: monospace;
-  font-weight: 700;
-  color: var(--text-1);
-  background: var(--surface-3);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-.tfa-input-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.code-input {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  width: 120px;
-  flex-shrink: 0;
-}
-.tfa-error {
-  font-size: 12px;
-  color: var(--red-warn);
-  font-weight: 600;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes scaleUp {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
 }
 
 /* Badges */
