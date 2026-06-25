@@ -45,12 +45,9 @@ public class AuthService {
         return AuthResponse.builder()
                 .id(user.getId())
                 .token(token)
-                .email(user.getUsername())
                 .name(user.getName())
                 .username(user.getUsername())
-                .phone("")
                 .role(user.getRole())
-                .isVerified(true)
                 .build();
     }
 

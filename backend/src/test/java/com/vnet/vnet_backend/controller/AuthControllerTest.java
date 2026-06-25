@@ -49,8 +49,8 @@ class AuthControllerTest {
     void login_success_shouldReturn200WithToken() throws Exception {
         AuthResponse authResp = AuthResponse.builder()
                 .id(1L).token("jwt.token.here")
-                .email("admin@vnet.id").name("Admin").username("admin")
-                .role(Role.SUPER_ADMIN).isVerified(true).build();
+                .name("Admin").username("admin")
+                .role(Role.SUPER_ADMIN).build();
         when(authService.login(any(), any(), any())).thenReturn(authResp);
 
         Map<String, String> body = Map.of("username", "admin", "password", "pass123");

@@ -9,10 +9,7 @@ import lombok.Data;
 public class AuthResponse {
     private Long id;
     private String token;
-    private String email;
     private String name;
     private String username;
-    private String phone;
     private Role role;
-    private Boolean isVerified;
 }
