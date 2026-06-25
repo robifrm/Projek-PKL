@@ -1,9 +1,7 @@
 package com.vnet.vnet_backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vnet.vnet_backend.dto.auth.AuthMessageResponse;
 import com.vnet.vnet_backend.dto.auth.AuthResponse;
-import com.vnet.vnet_backend.entity.User;
 import com.vnet.vnet_backend.enums.Role;
 import com.vnet.vnet_backend.service.AuthService;
 import com.vnet.vnet_backend.service.CaptchaService;
@@ -29,9 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Functional / API Test — AuthController
  *
- * Menguji semua endpoint autentikasi menggunakan MockMvc:
- * register, login, verify-otp, forgot-password, reset-password.
- * Menggunakan Spring Boot 4 @MockitoBean (pengganti @MockBean yang dihapus di SB4).
+ * Menguji endpoint autentikasi login dan captcha menggunakan MockMvc.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,35 +39,6 @@ class AuthControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     @MockitoBean   private AuthService   authService;
     @MockitoBean   private CaptchaService captchaService;
-
-    // ─────────────────────────────────────────────
-    // Helper — buat AuthMessageResponse
-    // ─────────────────────────────────────────────
-
-    private AuthMessageResponse msgResp(String message, String email, Boolean verified) {
-        return AuthMessageResponse.builder()
-                .message(message).email(email)
-                .expiresInMinutes(5L).verified(verified).build();
-    }
-
-    // ─────────────────────────────────────────────
-    // POST /api/auth/register
-    // ─────────────────────────────────────────────
-
-    @Test
-    @DisplayName("POST /api/auth/register — mengembalikan 403 FORBIDDEN karena dinonaktifkan")
-    void register_disabled_shouldReturn403() throws Exception {
-        Map<String, String> body = Map.of(
-            "name", "Budi", "username", "budi123",
-            "email", "user@vnet.id", "password", "pass123"
-        );
-
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("Fitur registrasi dinonaktifkan"));
-    }
 
     // ─────────────────────────────────────────────
     // POST /api/auth/login
@@ -86,7 +53,7 @@ class AuthControllerTest {
                 .role(Role.SUPER_ADMIN).isVerified(true).build();
         when(authService.login(any(), any(), any())).thenReturn(authResp);
 
-        Map<String, String> body = Map.of("email", "admin@vnet.id", "password", "pass123");
+        Map<String, String> body = Map.of("username", "admin", "password", "pass123");
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -100,9 +67,9 @@ class AuthControllerTest {
     @DisplayName("POST /api/auth/login — password salah mengembalikan 401")
     void login_wrongPassword_shouldReturn401() throws Exception {
         when(authService.login(any(), any(), any()))
-                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email atau password salah"));
+                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username atau password salah"));
 
-        Map<String, String> body = Map.of("email", "x@vnet.id", "password", "salah");
+        Map<String, String> body = Map.of("username", "admin", "password", "salah");
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -114,86 +81,14 @@ class AuthControllerTest {
     @DisplayName("POST /api/auth/login — akun belum verifikasi mengembalikan 403")
     void login_unverifiedAccount_shouldReturn403() throws Exception {
         when(authService.login(any(), any(), any()))
-                .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Email belum diverifikasi"));
+                .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Akun belum diverifikasi"));
 
-        Map<String, String> body = Map.of("email", "new@vnet.id", "password", "pass123");
+        Map<String, String> body = Map.of("username", "new_user", "password", "pass123");
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isForbidden());
-    }
-
-    // ─────────────────────────────────────────────
-    // POST /api/auth/verify-otp
-    // ─────────────────────────────────────────────
-
-    @Test
-    @DisplayName("POST /api/auth/verify-otp — OTP valid mengembalikan 200 verified=true")
-    void verifyOtp_valid_shouldReturn200() throws Exception {
-        when(authService.verifyOtp(any())).thenReturn(msgResp("Berhasil diverifikasi", "u@vnet.id", true));
-
-        Map<String, String> body = Map.of("email", "u@vnet.id", "otpCode", "123456");
-
-        mockMvc.perform(post("/api/auth/verify-otp")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.verified").value(true));
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/verify-otp — OTP salah mengembalikan 400")
-    void verifyOtp_invalid_shouldReturn400() throws Exception {
-        when(authService.verifyOtp(any()))
-                .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP tidak valid"));
-
-        Map<String, String> body = Map.of("email", "u@vnet.id", "otpCode", "999999");
-
-        mockMvc.perform(post("/api/auth/verify-otp")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isBadRequest());
-    }
-
-    // ─────────────────────────────────────────────
-    // POST /api/auth/forgot-password
-    // ─────────────────────────────────────────────
-
-    @Test
-    @DisplayName("POST /api/auth/forgot-password — selalu mengembalikan 200 (tidak bocorkan apakah email ada)")
-    void forgotPassword_shouldAlwaysReturn200() throws Exception {
-        when(authService.forgotPassword(any()))
-                .thenReturn(msgResp("Jika email terdaftar, OTP dikirim", "ghost@vnet.id", null));
-
-        Map<String, String> body = Map.of("email", "ghost@vnet.id");
-
-        mockMvc.perform(post("/api/auth/forgot-password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").exists());
-    }
-
-    // ─────────────────────────────────────────────
-    // POST /api/auth/reset-password
-    // ─────────────────────────────────────────────
-
-    @Test
-    @DisplayName("POST /api/auth/reset-password — berhasil mengembalikan 200")
-    void resetPassword_success_shouldReturn200() throws Exception {
-        when(authService.resetPassword(any()))
-                .thenReturn(msgResp("Password berhasil direset", "u@vnet.id", true));
-
-        Map<String, String> body = Map.of(
-            "email", "u@vnet.id", "otpCode", "000000", "newPassword", "newPass123"
-        );
-
-        mockMvc.perform(post("/api/auth/reset-password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Password berhasil direset"));
     }
 
     // ─────────────────────────────────────────────

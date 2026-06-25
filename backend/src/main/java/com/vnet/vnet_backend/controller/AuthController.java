@@ -2,11 +2,7 @@ package com.vnet.vnet_backend.controller;
 
 import com.vnet.vnet_backend.dto.auth.AuthMessageResponse;
 import com.vnet.vnet_backend.dto.auth.AuthResponse;
-import com.vnet.vnet_backend.dto.auth.ForgotPasswordRequest;
 import com.vnet.vnet_backend.dto.auth.LoginRequest;
-import com.vnet.vnet_backend.dto.auth.RegisterRequest;
-import com.vnet.vnet_backend.dto.auth.ResetPasswordRequest;
-import com.vnet.vnet_backend.dto.auth.VerifyOtpRequest;
 import com.vnet.vnet_backend.service.AuthService;
 import com.vnet.vnet_backend.service.CaptchaService;
 import lombok.RequiredArgsConstructor;
@@ -40,16 +36,6 @@ public class AuthController {
         return ResponseEntity.ok(captchaService.generateCaptcha());
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthMessageResponse> register(@RequestBody RegisterRequest request) {
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fitur registrasi dinonaktifkan");
-    }
-
-    @PostMapping("/verify-otp")
-    public ResponseEntity<AuthMessageResponse> verifyOtp(@RequestBody VerifyOtpRequest request) {
-        return ResponseEntity.ok(authService.verifyOtp(request));
-    }
-
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @RequestBody LoginRequest request,
@@ -57,27 +43,6 @@ public class AuthController {
             HttpServletRequest servletRequest) {
         return ResponseEntity.ok(authService.login(request, userAgent, getClientIp(servletRequest)));
     }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<AuthMessageResponse> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        return ResponseEntity.ok(authService.forgotPassword(request));
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<AuthMessageResponse> resetPassword(@RequestBody ResetPasswordRequest request) {
-        return ResponseEntity.ok(authService.resetPassword(request));
-    }
-
-    @PostMapping("/register-init")
-    public ResponseEntity<Map<String, Object>> registerInit(@RequestBody Map<String, Object> payload) {
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fitur registrasi dinonaktifkan");
-    }
-
-    @PostMapping("/register-confirm")
-    public ResponseEntity<Map<String, Object>> registerConfirm(@RequestBody Map<String, Object> payload) {
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fitur registrasi dinonaktifkan");
-    }
-
 
     @PostMapping("/login-init")
     public ResponseEntity<AuthResponse> loginInit(
@@ -87,14 +52,9 @@ public class AuthController {
         validateCaptchaIfPresent(payload);
 
         LoginRequest request = new LoginRequest();
-        request.setEmail(firstText(payload, "email", "username"));
+        request.setUsername(firstText(payload, "username"));
         request.setPassword(firstText(payload, "password"));
         return ResponseEntity.ok(authService.login(request, userAgent, getClientIp(servletRequest)));
-    }
-
-    @PostMapping("/login-confirm")
-    public ResponseEntity<Map<String, String>> loginConfirm() {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP tidak digunakan saat login");
     }
 
     @ExceptionHandler(ResponseStatusException.class)
@@ -161,7 +121,6 @@ public class AuthController {
     private Map<String, Object> responseBody(AuthMessageResponse response) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("message", response.getMessage());
-        body.put("email", response.getEmail());
         body.put("expiresInMinutes", response.getExpiresInMinutes());
         body.put("verified", response.getVerified());
         return body;

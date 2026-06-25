@@ -518,7 +518,7 @@ const handleLoginInit = async () => {
   margin-bottom: 16px;
 }
 
-/* ─── Right Panel ────────────────────────────────── */
+/* Right Panel */
 .auth-right {
   flex: 1;
   display: flex;

@@ -51,8 +51,23 @@
       <RouterLink to="/support" class="nav-item" data-tooltip="Support">
         <IconSupport class="nav-icon" /><span class="nav-label">Support</span>
       </RouterLink>
-      <a href="#" @click.prevent="logout" class="nav-item" data-tooltip="Logout" style="color: #ef4444;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-icon" style="color: #ef4444;">
+      <a
+        href="#"
+        @click.prevent="logout"
+        class="nav-item"
+        data-tooltip="Logout"
+        style="color: #ef4444"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="nav-icon"
+          style="color: #ef4444"
+        >
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
           <polyline points="16 17 21 12 16 7"></polyline>
           <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -71,13 +86,19 @@
 </template>
 
 <script setup>
-import { defineComponent, h, ref, computed, onMounted, onBeforeUnmount } from "vue";
+import {
+  defineComponent,
+  h,
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
 defineProps({ collapsed: Boolean, mobileOpen: Boolean });
 
 const user = ref({
-  nama: 'Admin User',
-  username: 'admin',
-  email: 'admin@victorynetwork.id'
+  nama: "Admin User",
+  username: "admin",
 });
 
 function loadUserProfile() {
@@ -93,24 +114,29 @@ function loadUserProfile() {
 
 onMounted(() => {
   loadUserProfile();
-  window.addEventListener('vnet-user-updated', loadUserProfile);
+  window.addEventListener("vnet-user-updated", loadUserProfile);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('vnet-user-updated', loadUserProfile);
+  window.removeEventListener("vnet-user-updated", loadUserProfile);
 });
 
 const userInitials = computed(() => {
-  if (!user.value || !user.value.nama) return 'A';
-  return user.value.nama.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+  if (!user.value || !user.value.nama) return "A";
+  return user.value.nama
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
 });
 
 function logout() {
-  window.dispatchEvent(new CustomEvent('request-logout'));
+  window.dispatchEvent(new CustomEvent("request-logout"));
 }
 
 const logoSrc = ref("/brand/vnet-logo.png");
-const iconSrc = ref("/brand/vnet-icon.png");
+const iconSrc = ref("/brand/vnet-icon.svg");
 
 const mkI = (paths) =>
   defineComponent({
@@ -156,7 +182,7 @@ const IconAddress = mkI([
 const IconPackages = mkI([
   "M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z",
   "M3.27 6.96L12 12.01l8.73-5.05",
-  "M12 22.08V12"
+  "M12 22.08V12",
 ]);
 const IconSettings = mkI([
   "M12 15a3 3 0 100-6 3 3 0 000 6z",
@@ -179,9 +205,14 @@ const navItems = [
 ];
 
 const filteredNavItems = computed(() => {
-  if (user.value && user.value.role === 'AGENT') {
-    const allowed = ['/dashboard', '/packages', '/customers', '/address-insights'];
-    return navItems.filter(item => allowed.includes(item.to));
+  if (user.value && user.value.role === "AGENT") {
+    const allowed = [
+      "/dashboard",
+      "/packages",
+      "/customers",
+      "/address-insights",
+    ];
+    return navItems.filter((item) => allowed.includes(item.to));
   }
   return navItems;
 });
@@ -196,7 +227,9 @@ const filteredNavItems = computed(() => {
   flex-shrink: 0;
   position: relative;
   z-index: 100;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   border-right: 1px solid var(--sidebar-border);
 }
@@ -216,26 +249,56 @@ const filteredNavItems = computed(() => {
   min-width: 0;
 }
 .logo-full {
-  width: 150px; height: 48px;
-  display: block; flex-shrink: 0;
-  object-fit: contain; object-position: left center;
+  width: 150px;
+  height: 48px;
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+  object-position: left center;
 }
 .logo-icon {
-  width: 34px; height: 34px;
-  display: none; flex-shrink: 0;
-  object-fit: contain; object-position: center;
+  width: 34px;
+  height: 34px;
+  display: none;
+  flex-shrink: 0;
+  object-fit: contain;
+  object-position: center;
 }
 
 /* Collapsed state */
-.sidebar--collapsed { width: 60px; overflow: visible; }
-.sidebar--collapsed .sidebar__logo { padding: 18px 13px 20px; }
-.sidebar--collapsed .sidebar__logo-link { justify-content: center; }
-.sidebar--collapsed .logo-full { display: none; }
-.sidebar--collapsed .logo-icon { display: block; width: 30px; height: 30px; }
-.sidebar--collapsed .nav-label { display: none; }
-.sidebar--collapsed .nav-item { justify-content: center; padding: 10px; position: relative; }
-.sidebar--collapsed .user-info { display: none; }
-.sidebar--collapsed .user-chip { justify-content: center; padding: 8px; }
+.sidebar--collapsed {
+  width: 60px;
+  overflow: visible;
+}
+.sidebar--collapsed .sidebar__logo {
+  padding: 18px 13px 20px;
+}
+.sidebar--collapsed .sidebar__logo-link {
+  justify-content: center;
+}
+.sidebar--collapsed .logo-full {
+  display: none;
+}
+.sidebar--collapsed .logo-icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+}
+.sidebar--collapsed .nav-label {
+  display: none;
+}
+.sidebar--collapsed .nav-item {
+  justify-content: center;
+  padding: 10px;
+  position: relative;
+}
+.sidebar--collapsed .user-info {
+  display: none;
+}
+.sidebar--collapsed .user-chip {
+  justify-content: center;
+  padding: 8px;
+}
 
 /* Premium Tooltip for collapsed sidebar */
 .sidebar--collapsed .nav-item::after {
@@ -261,7 +324,7 @@ const filteredNavItems = computed(() => {
   color: var(--text-1);
 }
 .sidebar--collapsed .nav-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: calc(100% + 7px);
   top: 50%;
@@ -284,18 +347,37 @@ const filteredNavItems = computed(() => {
 /* Mobile */
 @media (max-width: 640px) {
   .sidebar {
-    position: fixed; top: 0; left: 0; bottom: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
     width: 220px !important;
     transform: translateX(-100%);
     box-shadow: var(--shadow-xl);
   }
-  .sidebar--mobile-open { transform: translateX(0); }
-  .logo-full { display: block !important; }
-  .logo-icon { display: none !important; }
-  .nav-label { display: block !important; }
-  .nav-item { justify-content: flex-start !important; padding: 9px 14px !important; }
-  .user-info { display: block !important; }
-  .user-chip { justify-content: flex-start !important; padding: 10px 14px !important; }
+  .sidebar--mobile-open {
+    transform: translateX(0);
+  }
+  .logo-full {
+    display: block !important;
+  }
+  .logo-icon {
+    display: none !important;
+  }
+  .nav-label {
+    display: block !important;
+  }
+  .nav-item {
+    justify-content: flex-start !important;
+    padding: 9px 14px !important;
+  }
+  .user-info {
+    display: block !important;
+  }
+  .user-chip {
+    justify-content: flex-start !important;
+    padding: 10px 14px !important;
+  }
 }
 
 /* Nav */
@@ -308,7 +390,9 @@ const filteredNavItems = computed(() => {
   overflow-y: auto;
   overflow-x: hidden;
 }
-.sidebar__nav::-webkit-scrollbar { width: 0; }
+.sidebar__nav::-webkit-scrollbar {
+  width: 0;
+}
 
 .nav-item {
   display: flex;
@@ -336,9 +420,11 @@ const filteredNavItems = computed(() => {
 }
 /* Active indicator bar */
 .nav-item--active::before {
-  content: '';
+  content: "";
   position: absolute;
-  left: 0; top: 15%; bottom: 15%;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
   width: 3px;
   background: linear-gradient(180deg, var(--teal), var(--navy));
   border-radius: 0 3px 3px 0;
@@ -346,7 +432,9 @@ const filteredNavItems = computed(() => {
 }
 
 .nav-icon {
-  width: 16px; height: 16px; flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
   transition: color 0.18s;
 }
 
@@ -369,18 +457,33 @@ const filteredNavItems = computed(() => {
   border-radius: var(--r-sm);
   transition: background 0.15s;
 }
-.user-chip:hover { background: var(--sidebar-item-active); }
+.user-chip:hover {
+  background: var(--sidebar-item-active);
+}
 .user-avatar {
-  width: 30px; height: 30px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--gold) 0%, #F59E0B 100%);
+  background: linear-gradient(135deg, var(--gold) 0%, #f59e0b 100%);
   color: var(--navy);
   font-family: var(--font-display);
-  font-weight: 800; font-size: 11px;
-  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
 }
-.user-name { font-size: 11px; font-weight: 600; color: var(--text-1); line-height: 1.3; }
-.user-role { font-size: 9px; color: var(--text-3); margin-top: 1px; }
+.user-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.3;
+}
+.user-role {
+  font-size: 9px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
 </style>

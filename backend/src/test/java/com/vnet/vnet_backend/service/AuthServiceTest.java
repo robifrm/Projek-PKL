@@ -8,7 +8,6 @@ import com.vnet.vnet_backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -23,8 +22,7 @@ import static org.mockito.Mockito.*;
 /**
  * Unit Test — AuthService
  *
- * Menguji semua alur autentikasi: register, login, verifyOtp,
- * forgotPassword, resetPassword dengan mock dependencies.
+ * Menguji alur login dengan mock dependencies.
  */
 @DisplayName("AuthService Unit Tests")
 class AuthServiceTest {
@@ -32,8 +30,6 @@ class AuthServiceTest {
     private UserRepository    userRepository;
     private PasswordEncoder   passwordEncoder;
     private JwtProvider       jwtProvider;
-    private OtpService        otpService;
-    private EmailService      emailService;
     private AuthService       authService;
 
     @BeforeEach
@@ -41,36 +37,13 @@ class AuthServiceTest {
         userRepository  = mock(UserRepository.class);
         passwordEncoder = new BCryptPasswordEncoder();
         jwtProvider     = new JwtProvider();
-        otpService      = new OtpService(passwordEncoder);
-        emailService    = mock(EmailService.class);
 
         ReflectionTestUtils.setField(jwtProvider, "jwtSecret",
                 "test_secret_key_at_least_32_chars_long_for_hs256");
         ReflectionTestUtils.setField(jwtProvider, "tokenValidityInMilliseconds", 3_600_000L);
-        ReflectionTestUtils.setField(otpService,  "expirationMinutes", 5L);
 
         UserSessionService userSessionService = mock(UserSessionService.class);
-        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, otpService, emailService, userSessionService);
-    }
-
-    // ─────────────────────────────────────────────
-    // register()
-    // ─────────────────────────────────────────────
-
-    @Test
-    @DisplayName("register() harus throw FORBIDDEN")
-    void register_newUser_shouldThrowForbidden() {
-        RegisterRequest req = new RegisterRequest();
-        req.setName("Budi");
-        req.setUsername("budi123");
-        req.setEmail("budi@vnet.id");
-        req.setPhone("08123456789");
-        req.setPassword("password123");
-
-        assertThatThrownBy(() -> authService.register(req))
-                .isInstanceOf(ResponseStatusException.class)
-                .extracting(e -> ((ResponseStatusException)e).getStatusCode().value())
-                .isEqualTo(403);
+        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, userSessionService);
     }
 
     // ─────────────────────────────────────────────
@@ -90,7 +63,7 @@ class AuthServiceTest {
         when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(user));
 
         LoginRequest req = new LoginRequest();
-        req.setEmail("admin");
+        req.setUsername("admin");
         req.setPassword("rahasia123");
 
         AuthResponse resp = authService.login(req);
@@ -110,7 +83,7 @@ class AuthServiceTest {
         when(userRepository.findByUsernameIgnoreCase("user")).thenReturn(Optional.of(user));
 
         LoginRequest req = new LoginRequest();
-        req.setEmail("user");
+        req.setUsername("user");
         req.setPassword("salah");
 
         assertThatThrownBy(() -> authService.login(req))
@@ -125,52 +98,12 @@ class AuthServiceTest {
         when(userRepository.findByUsernameIgnoreCase(anyString())).thenReturn(Optional.empty());
 
         LoginRequest req = new LoginRequest();
-        req.setEmail("ghost");
+        req.setUsername("ghost");
         req.setPassword("pass");
 
         assertThatThrownBy(() -> authService.login(req))
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(e -> ((ResponseStatusException)e).getStatusCode().value())
                 .isEqualTo(404);
-    }
-
-    // ─────────────────────────────────────────────
-    // verifyOtp()
-    // ─────────────────────────────────────────────
-
-    @Test
-    @DisplayName("verifyOtp() berhasil")
-    void verifyOtp_withBypassOtp_shouldVerifyUser() {
-        VerifyOtpRequest req = new VerifyOtpRequest();
-        req.setEmail("pending");
-        req.setOtpCode("123456");
-
-        AuthMessageResponse resp = authService.verifyOtp(req);
-
-        assertThat(resp.getVerified()).isTrue();
-    }
-
-    // ─────────────────────────────────────────────
-    // resetPassword()
-    // ─────────────────────────────────────────────
-
-    @Test
-    @DisplayName("resetPassword() harus berhasil mengubah password")
-    void resetPassword_withBypassOtp_shouldChangePassword() {
-        User user = new User();
-        user.setUsername("reset");
-        user.setPassword(passwordEncoder.encode("oldPass123"));
-        when(userRepository.findByUsernameIgnoreCase("reset")).thenReturn(Optional.of(user));
-        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        ResetPasswordRequest req = new ResetPasswordRequest();
-        req.setEmail("reset");
-        req.setOtpCode("000000");
-        req.setNewPassword("newPass456");
-
-        AuthMessageResponse resp = authService.resetPassword(req);
-
-        assertThat(resp.getMessage()).contains("berhasil");
-        assertThat(passwordEncoder.matches("newPass456", user.getPassword())).isTrue();
     }
 }

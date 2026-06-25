@@ -118,35 +118,6 @@
           </div>
         </Transition>
       </div>
-      <div class="profile-container">
-        <button
-          class="topbar__avatar"
-          :title="adminName"
-          @click="toggleProfile"
-        >
-          {{ userInitials }}
-        </button>
-        <Transition name="dropdown">
-          <div v-if="showProfile" class="profile-dropdown glass-card">
-            <div class="profile-head">
-              <div class="profile-avatar">{{ userInitials }}</div>
-              <div class="profile-meta">
-                <div class="profile-name">{{ adminName }}</div>
-                <div class="profile-email">{{ adminEmail }}</div>
-              </div>
-            </div>
-            <div class="profile-list">
-              <button @click="router.push('/settings')">
-                Account Settings
-              </button>
-              <button @click="router.push('/data-import')">
-                Import Center
-              </button>
-              <button class="profile-danger" @click="logout">Logout</button>
-            </div>
-          </div>
-        </Transition>
-      </div>
     </div>
   </header>
 </template>
