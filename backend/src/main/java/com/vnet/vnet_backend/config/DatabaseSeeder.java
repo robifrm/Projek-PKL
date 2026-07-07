@@ -92,7 +92,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         // 5. Seed 2 dummy records for each RegistrationStatus if none exist
-        if (customerRegistrationRepository.count() == 0) {
+        if (customerRegistrationRepository.findByCustId("VN33021").isEmpty()) {
+            baAktivasiRepository.deleteAll();
+            customerRepository.deleteAll();
+            customerRegistrationRepository.deleteAll();
+
             List<InternetPackage> packages = packageRepository.findAll();
             InternetPackage pkg = packages.isEmpty() ? null : packages.get(0);
             List<Agent> agents = agentRepository.findAll();
