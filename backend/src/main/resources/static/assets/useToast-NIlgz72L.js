@@ -1,0 +1,1 @@
+import{as as a}from"./index-WxXlSfGe.js";function e(){const r=a();return{success:(s,o=3e3)=>r.addToast(s,"success",o),error:(s,o=4e3)=>r.addToast(s,"error",o),info:(s,o=3e3)=>r.addToast(s,"info",o),warning:(s,o=3e3)=>r.addToast(s,"warning",o)}}export{e as u};

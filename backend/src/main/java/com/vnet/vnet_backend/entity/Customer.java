@@ -61,4 +61,8 @@ public class Customer {
     @ManyToOne(optional = true)
     @JoinColumn(name = "agent_id")
     private Agent agent;
+
+    private String koordinat;
+
+    private String afiliator;
 }

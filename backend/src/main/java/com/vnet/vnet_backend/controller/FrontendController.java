@@ -15,7 +15,8 @@ public class FrontendController {
             "/agent-performance",
             "/address-insights",
             "/settings",
-            "/support"
+            "/support",
+            "/register"
     })
     public String index() {
         return "forward:/index.html";

@@ -53,6 +53,7 @@ public class CustomerService {
 
     // CREATE CUSTOMER
     public Customer createCustomer(Customer customer) {
+        boolean isUpdate = false;
         // If logged-in user is an agent, force their agent association
         Long agentId = getCurrentAgentId();
         if (agentId != null) {
@@ -71,9 +72,8 @@ public class CustomerService {
             }
             customer.setCustId(nextId);
         } else {
-            // Validasi custId unik jika diinput manual
             if (customerRepository.existsByCustId(customer.getCustId())) {
-                throw new RuntimeException("Cust ID already exists!");
+                isUpdate = true;
             }
         }
 
@@ -167,6 +167,27 @@ public class CustomerService {
         }
         if (customer.getTanggalAktivasi() == null) {
             customer.setTanggalAktivasi(LocalDate.now());
+        }
+
+        if (isUpdate) {
+            return customerRepository.findByCustId(customer.getCustId())
+                    .map(existing -> {
+                        existing.setNama(customer.getNama());
+                        existing.setEmail(customer.getEmail());
+                        existing.setNoTelpon(customer.getNoTelpon());
+                        existing.setStatus(customer.getStatus());
+                        existing.setPkg(customer.getPkg());
+                        existing.setAddress(customer.getAddress());
+                        existing.setPrice(customer.getPrice());
+                        existing.setProfit(customer.getProfit());
+                        existing.setBiayaPasang(customer.getBiayaPasang());
+                        existing.setIsolir(customer.getIsolir());
+                        existing.setTanggalRegistrasi(customer.getTanggalRegistrasi());
+                        existing.setTanggalAktivasi(customer.getTanggalAktivasi());
+                        existing.setAgent(customer.getAgent());
+                        return customerRepository.save(existing);
+                    })
+                    .orElseGet(() -> customerRepository.save(customer));
         }
 
         return customerRepository.save(customer);

@@ -115,13 +115,31 @@ class CustomerServiceTest {
     }
 
     @Test
-    @DisplayName("createCustomer() harus throw jika custId sudah ada")
-    void createCustomer_duplicateCustId_shouldThrow() {
-        when(customerRepository.existsByCustId("EXIST")).thenReturn(true);
+    @DisplayName("createCustomer() harus update jika custId sudah ada")
+    void createCustomer_duplicateCustId_shouldUpdate() {
+        Customer existing = new Customer();
+        existing.setId(5L);
+        existing.setCustId("EXIST");
+        existing.setNama("Old Name");
 
-        assertThatThrownBy(() -> customerService.createCustomer(buildCustomer("EXIST", 1L, 1L, null)))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("already exists");
+        InternetPackage pkg = new InternetPackage();
+        pkg.setId(1L);
+        pkg.setPrice(100.0);
+        pkg.setProfit(10.0);
+
+        when(customerRepository.existsByCustId("EXIST")).thenReturn(true);
+        when(customerRepository.findByCustId("EXIST")).thenReturn(Optional.of(existing));
+        when(packageRepository.findById(1L)).thenReturn(Optional.of(pkg));
+        when(addressRepository.findById(1L)).thenReturn(Optional.of(new Address()));
+        when(customerRepository.save(any(Customer.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Customer input = buildCustomer("EXIST", 1L, 1L, null);
+        input.setNama("New Name");
+
+        Customer result = customerService.createCustomer(input);
+
+        assertThat(result.getId()).isEqualTo(5L);
+        assertThat(result.getNama()).isEqualTo("New Name");
     }
 
     @Test

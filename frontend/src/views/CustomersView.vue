@@ -9,6 +9,21 @@
         </p>
       </div>
       <div class="page-actions">
+        <button class="btn btn--ghost" @click="showExportModal = true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Export
+        </button>
         <button class="btn btn--primary" @click="showRegisterModal = true">
           <svg
             viewBox="0 0 24 24"
@@ -394,6 +409,7 @@
               <option value="">Status: All</option>
               <option value="ACTIVE">Active</option>
               <option value="ISOLIR">Isolir</option>
+              <option value="NEW">New</option>
             </select>
             <svg
               viewBox="0 0 24 24"
@@ -1013,6 +1029,189 @@
       </div>
     </div>
 
+    <!-- Modal Export -->
+    <div
+      v-if="showExportModal"
+      class="modal-overlay"
+      @click.self="showExportModal = false"
+    >
+      <div class="modal-card" style="max-width: 500px;">
+        <div class="modal-header">
+          <h2>Export Subscribers Data</h2>
+          <button @click="showExportModal = false" class="close-btn">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc" style="font-size: 13px; color: var(--text-3); margin-bottom: 16px;">
+            Export subscribers list to Microsoft Excel format with selected period filter.
+          </p>
+          
+          <div class="form-group">
+            <label class="form-label">Timeframe Period</label>
+            <div class="filter-select" style="width: 100%;">
+              <select v-model="exportFilterType" class="form-input">
+                <option value="all">Semua Waktu (All Time)</option>
+                <option value="weekly">Mingguan (Weekly)</option>
+                <option value="month">Bulanan (Monthly)</option>
+                <option value="quarter">Per Kuartal (Quarterly)</option>
+                <option value="year">Tahunan (Yearly)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Weekly Filter Context -->
+          <div v-if="exportFilterType === 'weekly'" class="form-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+            <div class="form-group">
+              <label class="form-label">Tahun</label>
+              <div class="filter-select" style="width: 100%;">
+                <select v-model="exportYear" class="form-input">
+                  <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bulan</label>
+              <div class="filter-select" style="width: 100%;">
+                <select v-model="exportMonth" class="form-input">
+                  <option :value="1">Januari</option>
+                  <option :value="2">Februari</option>
+                  <option :value="3">Maret</option>
+                  <option :value="4">April</option>
+                  <option :value="5">Mei</option>
+                  <option :value="6">Juni</option>
+                  <option :value="7">Juli</option>
+                  <option :value="8">Agustus</option>
+                  <option :value="9">September</option>
+                  <option :value="10">Oktober</option>
+                  <option :value="11">November</option>
+                  <option :value="12">Desember</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Minggu Ke</label>
+              <div class="filter-select" style="width: 100%;">
+                <select v-model="exportWeek" class="form-input">
+                  <option :value="1">Minggu 1</option>
+                  <option :value="2">Minggu 2</option>
+                  <option :value="3">Minggu 3</option>
+                  <option :value="4">Minggu 4</option>
+                  <option :value="5">Minggu 5</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Month Filter Context -->
+          <div v-if="exportFilterType === 'month'" class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Tahun</label>
+              <div class="filter-select" style="width: 100%;">
+                <select v-model="exportYear" class="form-input">
+                  <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bulan</label>
+              <div class="filter-select" style="width: 100%;">
+                <select v-model="exportMonth" class="form-input">
+                  <option :value="1">Januari</option>
+                  <option :value="2">Februari</option>
+                  <option :value="3">Maret</option>
+                  <option :value="4">April</option>
+                  <option :value="5">Mei</option>
+                  <option :value="6">Juni</option>
+                  <option :value="7">Juli</option>
+                  <option :value="8">Agustus</option>
+                  <option :value="9">September</option>
+                  <option :value="10">Oktober</option>
+                  <option :value="11">November</option>
+                  <option :value="12">Desember</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quarter Filter Context -->
+          <div v-if="exportFilterType === 'quarter'" class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Tahun</label>
+              <div class="filter-select" style="width: 100%;">
+                <select v-model="exportYear" class="form-input">
+                  <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kuartal</label>
+              <div class="filter-select" style="width: 100%;">
+                <select v-model="exportQuarter" class="form-input">
+                  <option :value="1">Q1 (Jan - Mar)</option>
+                  <option :value="2">Q2 (Apr - Jun)</option>
+                  <option :value="3">Q3 (Jul - Sep)</option>
+                  <option :value="4">Q4 (Oct - Dec)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Year Filter Context -->
+          <div v-if="exportFilterType === 'year'" class="form-group">
+            <label class="form-label">Tahun</label>
+            <div class="filter-select" style="width: 100%;">
+              <select v-model="exportYear" class="form-input">
+                <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Columns Preview -->
+          <div class="export-preview-card" style="margin-top: 16px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0,0,0,0.02);">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
+              Export Columns (16 Fields)
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px;">
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">No</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Tanggal Registrasi</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Agen</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Nama</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Alamat</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">RT / RW</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Kecamatan</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Kelurahan/Desa</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Kota/Kab</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Kode Pos</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Nomor Telpon</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Email</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Package</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Status</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Tanggal Aktivasi</span>
+              <span class="badge badge--teal" style="font-size: 10px; padding: 2px 6px;">Cust Id</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn--ghost" @click="showExportModal = false" :disabled="exportLoading">
+            Cancel
+          </button>
+          <button class="btn btn--primary" @click="handleExportDownload" :disabled="exportLoading" style="min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <svg v-if="!exportLoading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <svg v-else class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 15px; height: 15px;">
+              <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".3" />
+              <path d="M12 3a9 9 0 019 9" />
+            </svg>
+            {{ exportLoading ? "Downloading..." : "Download Excel" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Customer Detail Panel (new rich panel component) -->
     <Teleport to="body">
       <CustomerDetailPanel
@@ -1044,6 +1243,7 @@ import {
   updateCustomerStatus,
   deleteCustomer,
   getDashboardOverview,
+  downloadCustomersExport,
 } from "@/services/api";
 import CustomerDetailPanel from "@/components/CustomerDetailPanel.vue";
 import { useToast } from "@/composables/useToast";
@@ -1080,6 +1280,68 @@ function toggleSort(key) {
   page.value = 1;
 }
 const showRegisterModal = ref(false);
+const showExportModal = ref(false);
+const exportLoading = ref(false);
+const exportFilterType = ref("all");
+const exportYear = ref(new Date().getFullYear());
+const exportMonth = ref(new Date().getMonth() + 1);
+const exportQuarter = ref(Math.floor(new Date().getMonth() / 3) + 1);
+const exportWeek = ref(1);
+
+const availableYears = computed(() => {
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear; y >= currentYear - 5; y--) {
+    years.push(y);
+  }
+  return years;
+});
+
+const handleExportDownload = async () => {
+  exportLoading.value = true;
+  try {
+    const params = {
+      filterType: exportFilterType.value,
+      year: exportYear.value,
+      month: exportMonth.value,
+      quarter: exportQuarter.value,
+      week: exportWeek.value,
+    };
+    const blob = await downloadCustomersExport(params);
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    
+    let filename = "subscribers_export";
+    if (exportFilterType.value === "weekly") {
+      filename += `_${exportYear.value}_${String(exportMonth.value).padStart(2, "0")}_W${exportWeek.value}`;
+    } else if (exportFilterType.value === "month") {
+      filename += `_${exportYear.value}_${String(exportMonth.value).padStart(2, "0")}`;
+    } else if (exportFilterType.value === "quarter") {
+      filename += `_${exportYear.value}_Q${exportQuarter.value}`;
+    } else if (exportFilterType.value === "year") {
+      filename += `_${exportYear.value}`;
+    } else {
+      filename += "_all";
+    }
+    
+    const currentDate = new Date().toISOString().split('T')[0];
+    filename += `_${currentDate}.xlsx`;
+    
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success("Data customer berhasil diexport");
+    showExportModal.value = false;
+  } catch (error) {
+    toast.error("Gagal melakukan export: " + error.message);
+  } finally {
+    exportLoading.value = false;
+  }
+};
 const showConfirmModal = ref(false);
 const confirmTitle = ref("");
 const confirmMessage = ref("");
@@ -1204,6 +1466,18 @@ const rowColors = [
 ];
 const customers = ref([]);
 
+const anchorDate = computed(() => {
+  let anchor = new Date(0);
+  customers.value.forEach((c) => {
+    const d = parseDateValue(c.registrationRaw || c.activationRaw);
+    if (d && d > anchor) {
+      anchor = d;
+    }
+  });
+  if (anchor.getTime() === 0) anchor = new Date();
+  return anchor;
+});
+
 const kpiData = computed(() => {
   const totalCount = customers.value.length;
   const activeCount = customers.value.filter(
@@ -1223,16 +1497,8 @@ const kpiData = computed(() => {
     growthText = (growth > 0 ? "+" : "") + growth + "%";
   } else {
     // Fallback if no overview
-    let anchor = new Date(0);
-    customers.value.forEach((c) => {
-      const d = parseDateValue(c.registrationRaw || c.activationRaw);
-      if (d && d > anchor) {
-        anchor = d;
-      }
-    });
-    if (anchor.getTime() === 0) anchor = new Date();
     newThisMonth = customers.value.filter((c) =>
-      isSameMonth(c.registrationRaw, anchor),
+      isSameMonth(c.registrationRaw, anchorDate.value),
     ).length;
 
     const prevTotal = totalCount - newThisMonth;
@@ -1266,7 +1532,10 @@ const kpiData = computed(() => {
 const filteredCustomers = computed(() =>
   customers.value.filter((c) => {
     const matchesStatus =
-      !statusFilter.value || c.status === statusFilter.value;
+      !statusFilter.value ||
+      (statusFilter.value === "NEW"
+        ? isSameMonth(c.registrationRaw, anchorDate.value)
+        : c.status === statusFilter.value);
     const matchesService =
       !serviceFilter.value || c.packageName === serviceFilter.value;
     const matchesSearch =

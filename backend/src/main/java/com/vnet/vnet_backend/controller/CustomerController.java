@@ -5,6 +5,7 @@ import com.vnet.vnet_backend.entity.CustomerStatus;
 import com.vnet.vnet_backend.entity.Agent;
 import com.vnet.vnet_backend.service.AnalyticsService;
 import com.vnet.vnet_backend.service.CustomerService;
+import com.vnet.vnet_backend.service.ExcelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
+import com.vnet.vnet_backend.repository.CustomerRegistrationRepository;
+import com.vnet.vnet_backend.repository.BaAktivasiRepository;
+import com.vnet.vnet_backend.entity.CustomerRegistration;
+import com.vnet.vnet_backend.entity.BaAktivasi;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,6 +33,9 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final AnalyticsService analyticsService;
+    private final ExcelService excelService;
+    private final CustomerRegistrationRepository customerRegistrationRepository;
+    private final BaAktivasiRepository baAktivasiRepository;
 
     private static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.forLanguageTag("id-ID"));
@@ -133,5 +141,92 @@ public class CustomerController {
     public void deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
         analyticsService.invalidateCache();
+    }
+
+    // EXPORT EXCEL
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportCustomers(
+            @RequestParam(required = false) String filterType,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer quarter,
+            @RequestParam(required = false) Integer week
+    ) {
+        List<Customer> allCustomers = customerService.getAllCustomers();
+        
+        // Filter in memory
+        List<Customer> filteredCustomers = allCustomers;
+        if (filterType != null && !filterType.equalsIgnoreCase("all")) {
+            filteredCustomers = new java.util.ArrayList<>();
+            for (Customer c : allCustomers) {
+                LocalDate regDate = c.getTanggalRegistrasi();
+                if (regDate == null) {
+                    continue;
+                }
+                
+                boolean match = true;
+                if (filterType.equalsIgnoreCase("month")) {
+                    if (year != null && regDate.getYear() != year) match = false;
+                    if (month != null && regDate.getMonthValue() != month) match = false;
+                } else if (filterType.equalsIgnoreCase("quarter")) {
+                    if (year != null && regDate.getYear() != year) match = false;
+                    if (quarter != null) {
+                        int q = (regDate.getMonthValue() - 1) / 3 + 1;
+                        if (q != quarter) match = false;
+                    }
+                } else if (filterType.equalsIgnoreCase("year")) {
+                    if (year != null && regDate.getYear() != year) match = false;
+                } else if (filterType.equalsIgnoreCase("week") || filterType.equalsIgnoreCase("weekly")) {
+                    if (year != null && regDate.getYear() != year) match = false;
+                    if (month != null && regDate.getMonthValue() != month) match = false;
+                    if (week != null) {
+                        java.time.temporal.WeekFields weekFields = java.time.temporal.WeekFields.ISO;
+                        int w = regDate.get(weekFields.weekOfMonth());
+                        if (w != week) match = false;
+                    }
+                }
+                
+                if (match) {
+                    filteredCustomers.add(c);
+                }
+            }
+        }
+        
+        // Build map of custId -> BaAktivasi
+        Map<String, BaAktivasi> baMap = new java.util.HashMap<>();
+        for (Customer c : filteredCustomers) {
+            if (c.getCustId() != null) {
+                Optional<CustomerRegistration> regOpt = customerRegistrationRepository.findByCustId(c.getCustId());
+                if (regOpt.isPresent()) {
+                    Optional<BaAktivasi> baOpt = baAktivasiRepository.findByRegistrationId(regOpt.get().getId());
+                    if (baOpt.isPresent()) {
+                        baMap.put(c.getCustId(), baOpt.get());
+                    }
+                }
+            }
+        }
+
+        byte[] excelBytes = excelService.generateCustomerExport(filteredCustomers, baMap);
+        
+        String filename = "subscribers_export";
+        if (("week".equalsIgnoreCase(filterType) || "weekly".equalsIgnoreCase(filterType)) && year != null && month != null && week != null) {
+            filename += "_" + year + "_" + String.format("%02d", month) + "_W" + week;
+        } else if ("month".equalsIgnoreCase(filterType) && year != null && month != null) {
+            filename += "_" + year + "_" + String.format("%02d", month);
+        } else if ("quarter".equalsIgnoreCase(filterType) && year != null && quarter != null) {
+            filename += "_" + year + "_Q" + quarter;
+        } else if ("year".equalsIgnoreCase(filterType) && year != null) {
+            filename += "_" + year;
+        } else {
+            filename += "_all";
+        }
+        
+        String currentDate = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        filename += "_" + currentDate + ".xlsx";
+        
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelBytes);
     }
 }

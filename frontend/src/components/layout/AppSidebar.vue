@@ -193,9 +193,19 @@ const IconSupport = mkI([
   "M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3",
   "M12 17h.01",
 ]);
+const IconRegistration = mkI([
+  "M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2",
+  "M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2H9V5z",
+  "M9 12l2 2 4-4"
+]);
+const IconSchedule = mkI([
+  "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+]);
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: IconDashboard },
+  { to: "/admin/registrations", label: "Customer Registration", icon: IconRegistration },
+  { to: "/installation-schedule", label: "Jadwal Pemasangan", icon: IconSchedule },
   { to: "/packages", label: "Packages", icon: IconPackages },
   { to: "/data-import", label: "Data Import", icon: IconDataImport },
   { to: "/data-preview", label: "Data Preview", icon: IconDataPreview },
@@ -205,14 +215,25 @@ const navItems = [
 ];
 
 const filteredNavItems = computed(() => {
-  if (user.value && user.value.role === "AGENT") {
-    const allowed = [
-      "/dashboard",
-      "/packages",
-      "/customers",
-      "/address-insights",
-    ];
-    return navItems.filter((item) => allowed.includes(item.to));
+  if (user.value) {
+    if (user.value.role === "AGENT") {
+      const allowed = [
+        "/dashboard",
+        "/admin/registrations",
+        "/packages",
+        "/customers",
+        "/address-insights",
+      ];
+      return navItems.filter((item) => allowed.includes(item.to));
+    }
+    if (user.value.role === "TECHNICIAN") {
+      const allowed = [
+        "/installation-schedule",
+      ];
+      return navItems.filter((item) => allowed.includes(item.to));
+    }
+    // Exclude Jadwal Pemasangan for SUPER_ADMIN and STAFF roles
+    return navItems.filter((item) => item.to !== "/installation-schedule");
   }
   return navItems;
 });
@@ -234,12 +255,29 @@ const filteredNavItems = computed(() => {
   border-right: 1px solid var(--sidebar-border);
 }
 
+.sidebar__role-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.sidebar--collapsed .sidebar__role-label {
+  display: none;
+}
+
 /* Logo */
 .sidebar__logo {
-  padding: 18px 14px 20px;
+  padding: 18px 14px 14px;
   border-bottom: 1px solid var(--sidebar-border);
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
   min-height: 72px;
 }
 .sidebar__logo-link {

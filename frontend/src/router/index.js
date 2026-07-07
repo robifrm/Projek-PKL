@@ -64,6 +64,24 @@ const routes = [
     component: () => import("@/views/SupportView.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/register",
+    name: "register",
+    component: () => import("@/views/CustomerRegistrationFormView.vue"),
+    meta: { hideLayout: true, guestOnly: false, requiresAuth: false },
+  },
+  {
+    path: "/admin/registrations",
+    name: "customer-registration",
+    component: () => import("@/views/CustomerRegistrationView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/installation-schedule",
+    name: "installation-schedule",
+    component: () => import("@/views/InstallationScheduleView.vue"),
+    meta: { requiresAuth: true },
+  },
   // Fallback to login or dashboard
   { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
 ];
@@ -74,15 +92,24 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  if (to.path === "/register") {
+    console.log("Bypassing all guards for public /register route");
+    next();
+    return;
+  }
+
   const token = localStorage.getItem("vnet_token");
+  const userStr = localStorage.getItem("vnet_user");
+  console.log("Router Guard Target:", to.path, "requiresAuth:", to.meta.requiresAuth, "guestOnly:", to.meta.guestOnly, "hasToken:", !!token, "user:", userStr);
 
   if (to.meta.requiresAuth && !token) {
+    console.log("Redirecting to /login: requires auth but no token");
     next("/login");
   } else if (to.meta.guestOnly && token) {
+    console.log("Redirecting to /dashboard: guestOnly but has token");
     next("/dashboard");
   } else {
     if (token) {
-      const userStr = localStorage.getItem("vnet_user");
       let role = null;
       if (userStr) {
         try {
@@ -98,13 +125,29 @@ router.beforeEach((to, from, next) => {
           "/settings",
           "/support",
           "/login",
+          "/admin/registrations",
         ];
-        if (!allowedRoutes.includes(to.path)) {
+        if (to.meta.requiresAuth && !allowedRoutes.includes(to.path)) {
+          console.log("AGENT redirected to /dashboard from:", to.path);
           next("/dashboard");
           return;
         }
       }
+      if (role === "TECHNICIAN") {
+        const allowedRoutes = [
+          "/installation-schedule",
+          "/settings",
+          "/support",
+          "/login",
+        ];
+        if (to.meta.requiresAuth && !allowedRoutes.includes(to.path)) {
+          console.log("TECHNICIAN redirected to /installation-schedule from:", to.path);
+          next("/installation-schedule");
+          return;
+        }
+      }
     }
+    console.log("Allowing route:", to.path);
     next();
   }
 });

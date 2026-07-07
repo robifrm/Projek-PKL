@@ -39,6 +39,18 @@ public class PackageController {
         return packageRepository.findAll();
     }
 
+    @GetMapping("/public")
+    public List<InternetPackage> getAllPublic() {
+        return packageRepository.findAll();
+    }
+
+    @GetMapping("/{id}/public")
+    public ResponseEntity<InternetPackage> getByIdPublic(@PathVariable Long id) {
+        return packageRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public InternetPackage create(@RequestBody InternetPackage pkg) {
         return packageRepository.save(pkg);

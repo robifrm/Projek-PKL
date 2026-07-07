@@ -37,7 +37,11 @@ async function apiFetch(path, options = {}) {
     if (response.status === 401) {
       localStorage.removeItem("vnet_token");
       localStorage.removeItem("vnet_user");
-      if (window.location.pathname !== "/login" && window.location.pathname !== "/signup") {
+      if (
+        window.location.pathname !== "/login" &&
+        window.location.pathname !== "/signup" &&
+        window.location.pathname !== "/register"
+      ) {
         window.location.href = "/login";
       }
     }
@@ -298,4 +302,111 @@ export function deleteUser(id) {
 export function getAgentsList() {
   return apiFetch("/agents");
 }
+
+export async function downloadCustomersExport(params) {
+  const token = localStorage.getItem("vnet_token");
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+  const headers = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  const queryParams = new URLSearchParams();
+  if (params) {
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null && params[key] !== "") {
+        queryParams.append(key, params[key]);
+      }
+    });
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/customers/export?${queryParams.toString()}`, {
+    headers,
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to export customers: ${response.status}`);
+  }
+  
+  return response.blob();
+}
+
+export function submitPublicRegistration(data, photoFile = null) {
+  const formData = new FormData();
+  formData.append("data", JSON.stringify(data));
+  if (photoFile) {
+    formData.append("photo", photoFile);
+  }
+  return apiFetch("/registrations/public", {
+    method: "POST",
+    body: formData,
+    // Do NOT set Content-Type; browser sets multipart boundary automatically
+    headers: {},
+  });
+}
+
+
+export function getRegistrations(params = {}) {
+  const query = new URLSearchParams();
+  if (params.status) query.append("status", params.status);
+  if (params.search) query.append("search", params.search);
+  return apiFetch(`/registrations?${query.toString()}`);
+}
+
+export function getRegistrationDetail(id) {
+  return apiFetch(`/registrations/${id}`);
+}
+
+export function updateRegistrationStatus(id, status, tanggalJadwal = null) {
+  let url = `/registrations/${id}/status?status=${encodeURIComponent(status)}`;
+  if (tanggalJadwal) {
+    url += `&tanggalJadwal=${encodeURIComponent(tanggalJadwal)}`;
+  }
+  return apiFetch(url, {
+    method: "PUT",
+  });
+}
+
+export function deleteRegistration(id) {
+  return apiFetch(`/registrations/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function getPackagesPublic() {
+  return apiFetch("/packages/public");
+}
+
+export function getPackagePublicDetail(id) {
+  return apiFetch(`/packages/${id}/public`);
+}
+
+export function getBaAktivasi(regId) {
+  return apiFetch(`/registrations/${regId}/ba`);
+}
+
+export function saveBaAktivasi(regId, baData) {
+  return apiFetch(`/registrations/${regId}/ba`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(baData),
+  });
+}
+
+export function updateBaSetup(regId, data) {
+  return apiFetch(`/registrations/${regId}/ba-setup`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateRegistration(id, data) {
+  return apiFetch(`/registrations/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
 

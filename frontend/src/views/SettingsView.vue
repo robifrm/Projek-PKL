@@ -655,6 +655,7 @@
               <option value="SUPER_ADMIN">SUPER_ADMIN</option>
               <option value="STAFF">STAFF</option>
               <option value="AGENT">AGENT</option>
+              <option value="TECHNICIAN">TECHNICIAN</option>
             </select>
           </div>
           <div
@@ -1236,6 +1237,7 @@ watch(activeSection, (newSection) => {
 const getRoleClass = (role) => {
   if (role === "SUPER_ADMIN") return "role-badge-admin";
   if (role === "STAFF") return "role-badge-staff";
+  if (role === "TECHNICIAN") return "role-badge-technician";
   return "role-badge-agent";
 };
 
@@ -1890,6 +1892,10 @@ const confirmDeleteUser = async () => {
 .role-badge-agent {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
+}
+.role-badge-technician {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
 }
 
 /* User table styles */

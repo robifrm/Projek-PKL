@@ -8,6 +8,9 @@ import com.vnet.vnet_backend.entity.CustomerStatus;
 import com.vnet.vnet_backend.entity.InternetPackage;
 import com.vnet.vnet_backend.entity.ImportLog;
 import com.vnet.vnet_backend.entity.UploadSession;
+import com.vnet.vnet_backend.entity.CustomerRegistration;
+import com.vnet.vnet_backend.entity.BaAktivasi;
+import com.vnet.vnet_backend.entity.RegistrationStatus;
 import com.vnet.vnet_backend.enums.ActionType;
 import com.vnet.vnet_backend.enums.ImportLogStatus;
 import com.vnet.vnet_backend.enums.ImportStatus;
@@ -17,6 +20,8 @@ import com.vnet.vnet_backend.repository.CustomerRepository;
 import com.vnet.vnet_backend.repository.InternetPackageRepository;
 import com.vnet.vnet_backend.repository.ImportLogRepository;
 import com.vnet.vnet_backend.repository.UploadSessionRepository;
+import com.vnet.vnet_backend.repository.CustomerRegistrationRepository;
+import com.vnet.vnet_backend.repository.BaAktivasiRepository;
 import org.springframework.stereotype.Service;
 
 import java.text.NumberFormat;
@@ -38,6 +43,8 @@ public class ImportService {
     private final AddressRepository addressRepository;
     private final UploadSessionRepository uploadSessionRepository;
     private final ImportLogRepository importLogRepository;
+    private final CustomerRegistrationRepository customerRegistrationRepository;
+    private final BaAktivasiRepository baAktivasiRepository;
 
     public ImportService(
             CustomerRepository customerRepository,
@@ -45,7 +52,9 @@ public class ImportService {
             InternetPackageRepository internetPackageRepository,
             AddressRepository addressRepository,
             UploadSessionRepository uploadSessionRepository,
-            ImportLogRepository importLogRepository
+            ImportLogRepository importLogRepository,
+            CustomerRegistrationRepository customerRegistrationRepository,
+            BaAktivasiRepository baAktivasiRepository
     ) {
         this.customerRepository = customerRepository;
         this.agentRepository = agentRepository;
@@ -53,6 +62,8 @@ public class ImportService {
         this.addressRepository = addressRepository;
         this.uploadSessionRepository = uploadSessionRepository;
         this.importLogRepository = importLogRepository;
+        this.customerRegistrationRepository = customerRegistrationRepository;
+        this.baAktivasiRepository = baAktivasiRepository;
     }
 
     public Map<String, Object> processImport(String fileName, List<Map<String, Object>> rows) {
@@ -103,7 +114,157 @@ public class ImportService {
                 Customer customer = mapRowToCustomer(row);
 
                 // INSERT OR UPDATE
-                customerRepository.save(customer);
+                Customer savedCustomer = customerRepository.save(customer);
+
+                // Find or create CustomerRegistration to hold BA Aktivasi data
+                CustomerRegistration reg = customerRegistrationRepository.findByCustId(savedCustomer.getCustId())
+                        .orElseGet(() -> {
+                            CustomerRegistration r = new CustomerRegistration();
+                            r.setCustId(savedCustomer.getCustId());
+                            r.setFirstName(savedCustomer.getNama());
+                            r.setLastName("");
+                            r.setEmail(savedCustomer.getEmail() != null ? savedCustomer.getEmail() : "");
+                            r.setNomorSelulerUtama(savedCustomer.getNoTelpon() != null ? savedCustomer.getNoTelpon() : "");
+                            r.setWaktu(savedCustomer.getTanggalRegistrasi() != null ? savedCustomer.getTanggalRegistrasi().atStartOfDay() : LocalDateTime.now());
+                            r.setTanggalJadwal(savedCustomer.getTanggalAktivasi() != null ? savedCustomer.getTanggalAktivasi().atStartOfDay() : LocalDateTime.now());
+                            r.setStatus(RegistrationStatus.SELESAI);
+                            r.setPkg(savedCustomer.getPkg());
+                            if (savedCustomer.getAddress() != null) {
+                                r.setAlamatDetail(savedCustomer.getAddress().getAlamat());
+                                String rtRw = savedCustomer.getAddress().getRtRw();
+                                if (rtRw != null && rtRw.contains("/")) {
+                                    String[] parts = rtRw.split("/");
+                                    r.setRt(parts[0].trim());
+                                    if (parts.length > 1) r.setRw(parts[1].trim());
+                                }
+                                r.setKelurahan(savedCustomer.getAddress().getKelurahan());
+                                r.setKecamatan(savedCustomer.getAddress().getKecamatan());
+                                r.setKota(savedCustomer.getAddress().getKota());
+                                r.setKodePos(savedCustomer.getAddress().getKodePos());
+                            }
+                            r.setKoordinat(savedCustomer.getKoordinat());
+                            r.setAfiliator(savedCustomer.getAfiliator());
+                            r.setJenisIdentitas("KTP"); // default
+                            r.setNomorIdentitas("-");   // default
+                            return customerRegistrationRepository.save(r);
+                        });
+
+                // Update registration status to SELESAI if it is not already
+                if (reg.getStatus() != RegistrationStatus.SELESAI) {
+                    reg.setStatus(RegistrationStatus.SELESAI);
+                    customerRegistrationRepository.save(reg);
+                }
+
+                // Find or create BaAktivasi linked to this registration
+                BaAktivasi ba = baAktivasiRepository.findByRegistrationId(reg.getId())
+                        .orElseGet(() -> BaAktivasi.builder().registration(reg).build());
+
+                // Map BA fields from Excel row
+                String tech = first(row, "Teknisi 1", "Teknisi", "namaTeknisi");
+                if (!tech.isBlank()) ba.setNamaTeknisi(tech);
+
+                String snOnt = first(row, "SN ONT", "SN", "snOnt");
+                if (!snOnt.isBlank()) ba.setSnOnt(snOnt);
+
+                String panjangKabel = first(row, "Panjang Kabel (Meter)", "Panjang Kabel", "panjangKabel");
+                if (!panjangKabel.isBlank()) {
+                    try {
+                        double pkVal = Double.parseDouble(panjangKabel);
+                        ba.setPanjangKabel((int) pkVal);
+                        ba.setQtyKabel((int) pkVal);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                String koordinatRumah = first(row, "Koordinat Rumah", "koordinatRumah");
+                if (!koordinatRumah.isBlank()) ba.setKoordinatRumah(koordinatRumah);
+
+                String kodeOdp = first(row, "Kode ODP", "kodeOdp");
+                if (!kodeOdp.isBlank()) ba.setKodeOdp(kodeOdp);
+
+                String portOdp = first(row, "Port ODP", "portOdp");
+                if (!portOdp.isBlank()) {
+                    try {
+                        double poVal = Double.parseDouble(portOdp);
+                        ba.setPortOdp((int) poVal);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                String portOdpTerpakai = first(row, "Port ODP Terpakai", "portOdpTerpakai");
+                if (!portOdpTerpakai.isBlank()) ba.setPortOdpTerpakai(portOdpTerpakai);
+
+                String pop = first(row, "POP", "pop");
+                if (!pop.isBlank()) ba.setPop(pop);
+
+                String olt = first(row, "OLT", "olt");
+                if (!olt.isBlank()) ba.setOlt(olt);
+
+                String rosset = first(row, "Rosset", "rosset");
+                if (!rosset.isBlank()) ba.setRosset(rosset);
+
+                String pigtail = first(row, "Pigtail", "pigtail");
+                if (!pigtail.isBlank()) {
+                    try {
+                        double ptVal = Double.parseDouble(pigtail);
+                        ba.setPigtail((int) ptVal);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                String patchcore = first(row, "Patchcore", "patchcore");
+                if (!patchcore.isBlank()) {
+                    try {
+                        double pcVal = Double.parseDouble(patchcore);
+                        ba.setPatchcore((int) pcVal);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                String splicing = first(row, "Splicing", "splicing");
+                if (!splicing.isBlank()) {
+                    try {
+                        double spVal = Double.parseDouble(splicing);
+                        ba.setSplicing((int) spVal);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                String redaman = first(row, "Redaman Output Kabel", "redamanOutputKabel");
+                if (!redaman.isBlank()) ba.setRedamanOutputKabel(redaman);
+
+                String bracket = first(row, "Jumlah Bracket/Spiral", "Jumlah Bracket", "jumlahBracket");
+                if (!bracket.isBlank()) {
+                    try {
+                        double brVal = Double.parseDouble(bracket);
+                        ba.setJumlahBracket((int) brVal);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                String sClamp = first(row, "Jumlah S-Clamp", "jumlahSClamp");
+                if (!sClamp.isBlank()) {
+                    try {
+                        double scVal = Double.parseDouble(sClamp);
+                        ba.setJumlahSClamp((int) scVal);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                String statusAktivasi = first(row, "Status Aktivasi", "statusAktivasi");
+                if (!statusAktivasi.isBlank()) ba.setStatusAktivasi(statusAktivasi);
+
+                // Parse Equipment if present
+                String equipment = first(row, "Equipment");
+                if (!equipment.isBlank()) {
+                    if (equipment.contains("ONT:") || equipment.contains("Modem:")) {
+                        ba.setQtyOnt(1);
+                    }
+                    if (equipment.contains("Router:")) {
+                        ba.setQtyRouter(1);
+                    }
+                } else {
+                    if (ba.getQtyOnt() == null) ba.setQtyOnt(1);
+                    if (ba.getQtyRouter() == null) ba.setQtyRouter(1);
+                    if (ba.getQtyKabel() == null) ba.setQtyKabel(150);
+                    if (ba.getQtyRoset() == null) ba.setQtyRoset(1);
+                    if (ba.getQtyAksesoris() == null) ba.setQtyAksesoris(2);
+                }
+
+                baAktivasiRepository.save(ba);
 
                 success++;
 
@@ -257,13 +418,22 @@ public class ImportService {
         customer.setEmail(first(row, "Email", "email"));
         customer.setTanggalRegistrasi(parseDate(first(row, "Tanggal Registrasi", "Tgl Registrasi", "Registration Date", "Tanggal Register")));
         customer.setTanggalAktivasi(parseDate(first(row, "Tanggal Aktivasi", "Tgl Aktivasi", "Tanggal Aktif", "Activation Date")));
-        customer.setStatus(parseStatus(first(row, "Status", "Customer Status")));
+        customer.setStatus(parseStatus(first(row, "Status", "Customer Status", "Status Aktivasi")));
         customer.setIsolir(customer.getStatus() == CustomerStatus.ISOLIR);
         customer.setPrice(parseDouble(first(row, "Price", "Harga", "Tarif")));
         customer.setProfit(parseDouble(first(row, "Profit", "Laba")));
         customer.setBiayaPasang(parseDouble(first(row, "Biaya Pasang", "Installation Fee")));
 
-        String packageName = first(row, "Package", "Paket", "Paket Internet", "Service");
+        String koordinat = first(row, "Koordinat Rumah", "Koordinat");
+        if (!koordinat.isBlank()) {
+            customer.setKoordinat(koordinat);
+        }
+
+        if (customer.getTanggalRegistrasi() == null) {
+            customer.setTanggalRegistrasi(customer.getTanggalAktivasi() != null ? customer.getTanggalAktivasi() : LocalDate.now());
+        }
+
+        String packageName = first(row, "Bandwidth", "Package", "Paket", "Paket Internet", "Service");
         if (!packageName.isBlank()) {
             InternetPackage pkg = resolvePackage(packageName, customer.getPrice(), customer.getProfit());
             customer.setPkg(pkg);
@@ -273,6 +443,16 @@ public class ImportService {
             if (customer.getProfit() == null) {
                 customer.setProfit(pkg.getProfit());
             }
+        }
+
+        if (customer.getPrice() == null) {
+            customer.setPrice(0.0);
+        }
+        if (customer.getProfit() == null) {
+            customer.setProfit(0.0);
+        }
+        if (customer.getBiayaPasang() == null) {
+            customer.setBiayaPasang(0.0);
         }
 
         String agentName = first(row, "Agen", "Agent", "Nama Agen");
@@ -330,30 +510,74 @@ public class ImportService {
     }
 
     private Address resolveAddress(Map<String, Object> row) {
-        String alamat = first(row, "Alamat", "Address", "Street");
-        String kota = first(row, "Kota", "City");
-        String kelurahan = first(row, "Kelurahan", "Kelurahan Desa", "Kelurahan / Desa", "Desa", "Village");
-        String kecamatan = first(row, "Kecamatan", "District");
-        String rtRw = first(row, "RT/RW", "Rt Rw", "RTRW");
-        String kodePos = first(row, "Kode Pos", "Kodepos", "Postal Code");
-        if (kota.isBlank()) {
-            kota = first(row, "Kota Kab", "Kota / Kab", "Kota Kabupaten", "Kabupaten", "Regency");
-        }
-
-        if (alamat.isBlank() && kota.isBlank() && kelurahan.isBlank() && kecamatan.isBlank()) {
+        String alamatFull = first(row, "Alamat", "Address", "Street");
+        if (alamatFull.isBlank()) {
             return null;
         }
 
-        String resolvedKota = kota;
-        return addressRepository.findFirstByAlamatIgnoreCaseAndKotaIgnoreCase(alamat, resolvedKota)
+        String alamat = "-";
+        String rtRw = "";
+        String kelurahan = "";
+        String kecamatan = "";
+        String kota = "Sukabumi";
+        String kodePos = "";
+
+        // Parse concatenated address if it contains commas
+        if (alamatFull.contains(",")) {
+            String[] parts = alamatFull.split(",");
+            if (parts.length > 0) {
+                alamat = parts[0].trim();
+            }
+            for (int i = 1; i < parts.length; i++) {
+                String part = parts[i].trim();
+                if (part.toUpperCase().startsWith("RT/RW") || part.toUpperCase().contains("RT ") || part.toUpperCase().contains("RW ")) {
+                    rtRw = part.replace("RT/RW", "").replace("rt/rw", "").replace("RT/rw", "").replace("rt/RW", "").trim();
+                } else if (i == 2 || (i == 1 && rtRw.isEmpty())) {
+                    kelurahan = part;
+                } else if (i == 3 || (i == 2 && !rtRw.isEmpty())) {
+                    kecamatan = part;
+                } else {
+                    // Try to parse ZIP code
+                    Pattern zipPattern = Pattern.compile("\\d{5}");
+                    Matcher m = zipPattern.matcher(part);
+                    if (m.find()) {
+                        kodePos = m.group();
+                        kota = part.replace(kodePos, "").trim();
+                    } else {
+                        kota = part;
+                    }
+                }
+            }
+        } else {
+            alamat = alamatFull;
+            String colKota = first(row, "Kota", "City", "Kota Kab", "Kota / Kab");
+            if (!colKota.isBlank()) kota = colKota;
+            String colKel = first(row, "Kelurahan", "Kelurahan Desa", "Desa");
+            if (!colKel.isBlank()) kelurahan = colKel;
+            String colKec = first(row, "Kecamatan", "District");
+            if (!colKec.isBlank()) kecamatan = colKec;
+            String colRtRw = first(row, "RT/RW", "Rt Rw", "RTRW");
+            if (!colRtRw.isBlank()) rtRw = colRtRw;
+            String colZip = first(row, "Kode Pos", "Kodepos", "Postal Code");
+            if (!colZip.isBlank()) kodePos = colZip;
+        }
+
+        String finalAlamat = alamat.isBlank() ? "-" : alamat;
+        String finalKota = kota.isBlank() ? "Sukabumi" : kota;
+        String finalKelurahan = kelurahan;
+        String finalKecamatan = kecamatan;
+        String finalRtRw = rtRw;
+        String finalKodePos = kodePos;
+
+        return addressRepository.findFirstByAlamatIgnoreCaseAndKotaIgnoreCase(finalAlamat, finalKota)
                 .orElseGet(() -> {
                     Address address = new Address();
-                    address.setAlamat(alamat.isBlank() ? "-" : alamat);
-                    address.setKota(resolvedKota);
-                    address.setKelurahan(kelurahan);
-                    address.setKecamatan(kecamatan);
-                    address.setRtRw(rtRw);
-                    address.setKodePos(kodePos);
+                    address.setAlamat(finalAlamat);
+                    address.setKota(finalKota);
+                    address.setKelurahan(finalKelurahan);
+                    address.setKecamatan(finalKecamatan);
+                    address.setRtRw(finalRtRw);
+                    address.setKodePos(finalKodePos);
                     return addressRepository.save(address);
                 });
     }

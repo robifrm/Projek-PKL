@@ -10,6 +10,7 @@ import com.vnet.vnet_backend.repository.UserRepository;
 import com.vnet.vnet_backend.repository.UserSessionRepository;
 import com.vnet.vnet_backend.service.AnalyticsService;
 import com.vnet.vnet_backend.service.CustomerService;
+import com.vnet.vnet_backend.service.ExcelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,7 @@ class CustomerControllerTest {
 
     @MockitoBean private CustomerService customerService;
     @MockitoBean private AnalyticsService analyticsService;
+    @MockitoBean private ExcelService excelService;
 
     private String adminToken;
 
@@ -160,5 +162,38 @@ class CustomerControllerTest {
                 .andExpect(status().isOk());
 
         verify(analyticsService).invalidateCache();
+    }
+
+    @Test
+    @DisplayName("GET /api/customers/export — sukses export customer")
+    void exportCustomers_success() throws Exception {
+        Customer c1 = new Customer(); c1.setId(1L); c1.setNama("User 1");
+        when(customerService.getAllCustomers()).thenReturn(List.of(c1));
+        when(excelService.generateCustomerExport(any(), any())).thenReturn(new byte[]{1, 2, 3});
+
+        mockMvc.perform(get("/api/customers/export")
+                .header("Authorization", "Bearer " + adminToken)
+                .param("filterType", "all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .andExpect(content().bytes(new byte[]{1, 2, 3}));
+    }
+
+    @Test
+    @DisplayName("GET /api/customers/export — sukses export customer dengan filter mingguan")
+    void exportCustomers_weekly_success() throws Exception {
+        Customer c1 = new Customer(); c1.setId(1L); c1.setNama("User 1"); c1.setTanggalRegistrasi(java.time.LocalDate.of(2026, 7, 2));
+        when(customerService.getAllCustomers()).thenReturn(List.of(c1));
+        when(excelService.generateCustomerExport(any(), any())).thenReturn(new byte[]{1, 2, 3});
+
+        mockMvc.perform(get("/api/customers/export")
+                .header("Authorization", "Bearer " + adminToken)
+                .param("filterType", "weekly")
+                .param("year", "2026")
+                .param("month", "7")
+                .param("week", "1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .andExpect(content().bytes(new byte[]{1, 2, 3}));
     }
 }
